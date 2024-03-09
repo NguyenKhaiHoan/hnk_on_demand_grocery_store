@@ -50,7 +50,7 @@ class ChangeNameController extends GetxController {
 
       HAppUtils.stopLoading();
       HAppUtils.showSnackBarSuccess(
-          'Thành công', 'Bạn đã thay đổi tên của bạn thành công.');
+          'Thành công', 'Bạn đã thay đổi tên của cửa hàng thành công.');
 
       isLoading.value = false;
       resetFormChangeName();

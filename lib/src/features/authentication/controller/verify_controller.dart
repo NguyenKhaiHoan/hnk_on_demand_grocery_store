@@ -30,7 +30,7 @@ class VerifyController extends GetxController {
       final user = FirebaseAuth.instance.currentUser;
       if (user?.emailVerified ?? false) {
         timer.cancel();
-        AuthenticationRepository.instance.screenRedirect();
+        Get.offNamed(HAppRoutes.completeAccount);
       }
     });
   }
@@ -38,7 +38,7 @@ class VerifyController extends GetxController {
   checkEmailVerification() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null && currentUser.emailVerified) {
-      AuthenticationRepository.instance.screenRedirect();
+      Get.offNamed(HAppRoutes.completeAccount);
     }
   }
 }

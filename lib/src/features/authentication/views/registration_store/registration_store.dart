@@ -1,6 +1,5 @@
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/views/registration_store/widgets/form_registration_store_widget.dart';
 

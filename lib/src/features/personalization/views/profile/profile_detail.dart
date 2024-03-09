@@ -2,9 +2,7 @@ import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_network/image_network.dart';
-import 'package:on_demand_grocery_store/src/common_widgets/add_image_button.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
-import 'package:on_demand_grocery_store/src/common_widgets/user_image_logo.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_name_controller.dart';
@@ -12,7 +10,6 @@ import 'package:on_demand_grocery_store/src/features/personalization/controllers
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/profile/widgets/section_profile.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
-import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   const ProfileDetailScreen({super.key});

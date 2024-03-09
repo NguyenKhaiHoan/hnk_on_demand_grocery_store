@@ -1,10 +1,7 @@
-import 'dart:io';
 import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_network/image_network.dart';
-import 'package:on_demand_grocery_store/src/common_widgets/add_image_button.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
@@ -89,7 +86,7 @@ class _FormRegistrationStoreWidgetState
                   'Hãy hoàn thành nốt các thông tin sau đây để hoàn tất đăng ký cửa hàng.',
               style: HAppStyle.paragraph2Regular
                   .copyWith(color: HAppColor.hGreyColorShade600),
-              children: [],
+              children: const [],
             ),
           ),
           gapH24,

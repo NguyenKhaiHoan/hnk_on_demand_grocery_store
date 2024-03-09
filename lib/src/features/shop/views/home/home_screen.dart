@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,6 +10,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Text('Đã đăng nhập');
+    return const Text('Đã đăng nhập');
   }
 }

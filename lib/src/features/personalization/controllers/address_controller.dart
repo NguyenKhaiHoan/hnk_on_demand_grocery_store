@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/address_model.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/district_ward_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';

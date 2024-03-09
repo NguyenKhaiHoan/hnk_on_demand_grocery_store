@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class ChangePhoneScreen extends StatefulWidget {
   const ChangePhoneScreen({super.key});
@@ -11,7 +10,7 @@ class ChangePhoneScreen extends StatefulWidget {
 class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return const Scaffold();
   }
 
   // @override

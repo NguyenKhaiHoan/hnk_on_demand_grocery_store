@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:get/get.dart';
-import 'package:on_demand_grocery_store/src/constants/app_assets.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/login_controller.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/views/login/widgets/form_login_widget.dart';

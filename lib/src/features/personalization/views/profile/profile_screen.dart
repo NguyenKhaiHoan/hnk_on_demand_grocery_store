@@ -1,8 +1,5 @@
-import 'package:enefty_icons/enefty_icons.dart';
-import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/user_image_logo.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';

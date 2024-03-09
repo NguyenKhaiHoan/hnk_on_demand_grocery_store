@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/sign_up_controller.dart';
-import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class FormChangePhoneWidget extends StatelessWidget {
-  FormChangePhoneWidget({super.key});
+  const FormChangePhoneWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return const Scaffold();
   }
 
   // final changePhoneController = Get.put(ChangePhoneController());

@@ -4,10 +4,7 @@ import 'package:on_demand_grocery_store/src/features/authentication/controller/n
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/address_model.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/models/user_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';
-import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
-import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class RegistrationController extends GetxController {
