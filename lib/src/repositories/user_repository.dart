@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:on_demand_grocery_store/src/exceptions/firebase_exception.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/models/user_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/user_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 
 class UserRepository extends GetxController {
@@ -13,22 +13,9 @@ class UserRepository extends GetxController {
 
   final _db = FirebaseFirestore.instance;
 
-  Future<void> saveUserRecord(UserModel user) async {
+  Future<UserModel> getUserInformation(String userId) async {
     try {
-      await _db.collection('Stores').doc(user.id).set(user.toJon());
-    } on FirebaseException catch (e) {
-      throw HFirebaseException(code: e.code).message;
-    } catch (e) {
-      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';
-    }
-  }
-
-  Future<UserModel> getUserInformation() async {
-    try {
-      final documentSnapshot = await _db
-          .collection('Stores')
-          .doc(AuthenticationRepository.instance.authUser?.uid)
-          .get();
+      final documentSnapshot = await _db.collection('Users').doc(userId).get();
       if (documentSnapshot.exists) {
         return UserModel.fromDocumentSnapshot(documentSnapshot);
       } else {
@@ -43,7 +30,7 @@ class UserRepository extends GetxController {
 
   Future<void> updateUser(UserModel user) async {
     try {
-      await _db.collection('Stores').doc(user.id).update(user.toJon());
+      await _db.collection('Users').doc(user.id).update(user.toJon());
     } on FirebaseException catch (e) {
       throw HFirebaseException(code: e.code).message;
     } catch (e) {
@@ -51,35 +38,10 @@ class UserRepository extends GetxController {
     }
   }
 
-  Future<void> updateSingleField(Map<String, dynamic> json) async {
+  Future<void> updateSingleField(
+      String userId, Map<String, dynamic> json) async {
     try {
-      await _db
-          .collection('Stores')
-          .doc(AuthenticationRepository.instance.authUser?.uid)
-          .update(json);
-    } on FirebaseException catch (e) {
-      throw HFirebaseException(code: e.code).message;
-    } catch (e) {
-      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';
-    }
-  }
-
-  Future<void> removeUserRecord(UserModel user) async {
-    try {
-      await _db.collection('Stores').doc(user.id).delete();
-    } on FirebaseException catch (e) {
-      throw HFirebaseException(code: e.code).message;
-    } catch (e) {
-      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';
-    }
-  }
-
-  Future<String> uploadImage(String path, XFile image) async {
-    try {
-      final ref = FirebaseStorage.instance.ref(path).child(image.name);
-      await ref.putFile(File(image.path));
-      final url = await ref.getDownloadURL();
-      return url;
+      await _db.collection('Users').doc(userId).update(json);
     } on FirebaseException catch (e) {
       throw HFirebaseException(code: e.code).message;
     } catch (e) {

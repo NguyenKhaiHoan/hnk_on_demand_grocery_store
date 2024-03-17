@@ -6,14 +6,14 @@ import 'package:on_demand_grocery_store/src/features/authentication/controller/s
 import 'package:on_demand_grocery_store/src/features/authentication/controller/verify_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_name_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
 
 class HAppBinding extends Bindings {
   @override
   void dependencies() {
     Get.put<NetworkController>(NetworkController(), permanent: true);
-    Get.lazyPut(() => UserController(), fenix: true);
+    Get.lazyPut(() => StoreController(), fenix: true);
     Get.lazyPut(() => AddressController(), fenix: true);
     Get.lazyPut(() => ChangeNameController(), fenix: true);
     Get.lazyPut(() => ChangePasswordController(), fenix: true);

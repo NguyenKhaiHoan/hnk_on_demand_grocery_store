@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_network/image_network.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
 
 class UserImageLogoWidget extends StatelessWidget {
@@ -13,17 +13,17 @@ class UserImageLogoWidget extends StatelessWidget {
   });
 
   final bool hasFunction;
-  final userController = UserController.instance;
+  final storeController = StoreController.instance;
   final rootController = RootController.instance;
 
   final double size;
 
   @override
   Widget build(BuildContext context) {
-    return userController.isLoading.value ||
-            userController.isUploadImageLoading.value
+    return storeController.isLoading.value ||
+            storeController.isUploadImageLoading.value
         ? CustomShimmerWidget.circular(width: size, height: size)
-        : userController.user.value.storeImage == ''
+        : storeController.user.value.storeImage == ''
             ? GestureDetector(
                 onTap: () =>
                     hasFunction ? rootController.animateToScreen(4) : null,
@@ -36,7 +36,7 @@ class UserImageLogoWidget extends StatelessWidget {
                   ),
                 ))
             : ImageNetwork(
-                image: userController.user.value.storeImage,
+                image: storeController.user.value.storeImage,
                 height: size,
                 width: size,
                 duration: 500,

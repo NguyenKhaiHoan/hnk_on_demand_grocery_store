@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/address_model.dart';
@@ -17,11 +15,7 @@ class AddressController extends GetxController {
   var currentAddress = AddressModel.empty().obs;
 
   var toggleRefresh = true.obs;
-  GlobalKey<FormState> addAddressFormKey = GlobalKey<FormState>();
-  final streetController = TextEditingController();
-  var city = ''.obs;
-  var district = ''.obs;
-  var ward = ''.obs;
+
 
   List<DistrictModel> hanoiData = <DistrictModel>[].obs;
 
@@ -40,21 +34,14 @@ class AddressController extends GetxController {
     hanoiData = list.map((e) => DistrictModel.fromJson(e)).toList();
   }
 
-  Future<List<AddressModel>> fetchUserAddresses() async {
+  Future<List<AddressModel>> fetchStoreAddresses() async {
     try {
-      final addresses = await addressRepository.getUserAddress();
+      final addresses = await addressRepository.getStoreAddress();
+      currentAddress.value = addresses.first;
       return addresses;
     } catch (e) {
       HAppUtils.showSnackBarError('Không tìm thấy địa chỉ', e.toString());
       return Future.error('Lỗi không thể tải được địa chỉ từ hệ thống');
     }
-  }
-
-  void resetFormAddAddress() {
-    streetController.clear();
-    city.value = '';
-    district.value = '';
-    ward.value = '';
-    addAddressFormKey.currentState?.reset();
   }
 }

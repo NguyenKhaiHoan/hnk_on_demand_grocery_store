@@ -8,13 +8,13 @@ class AddressRepository extends GetxController {
 
   final _db = FirebaseFirestore.instance;
 
-  Future<List<AddressModel>> getUserAddress() async {
+  Future<List<AddressModel>> getStoreAddress() async {
     try {
-      final userId = AuthenticationRepository.instance.authUser!.uid;
-      if (userId.isEmpty) throw 'Không có thông tin người dùng';
+      final storeId = AuthenticationRepository.instance.authUser!.uid;
+      if (storeId.isEmpty) throw 'Không có thông tin người dùng';
       final addresses = await _db
           .collection('Stores')
-          .doc(userId)
+          .doc(storeId)
           .collection('Addresses')
           .get();
 
@@ -29,10 +29,10 @@ class AddressRepository extends GetxController {
   Future<void> updateAddressField(
       String addressId, Map<String, dynamic> json) async {
     try {
-      final userId = AuthenticationRepository.instance.authUser!.uid;
+      final storeId = AuthenticationRepository.instance.authUser!.uid;
       await _db
           .collection('Stores')
-          .doc(userId)
+          .doc(storeId)
           .collection('Addresses')
           .doc(addressId)
           .update(json);
@@ -43,10 +43,10 @@ class AddressRepository extends GetxController {
 
   Future<String> addAndFindIdForNewAddress(AddressModel address) async {
     try {
-      final userId = AuthenticationRepository.instance.authUser?.uid;
+      final storeId = AuthenticationRepository.instance.authUser?.uid;
       final currentAddress = await _db
           .collection('Stores')
-          .doc(userId)
+          .doc(storeId)
           .collection('Addresses')
           .add(address.toJon());
       return currentAddress.id;

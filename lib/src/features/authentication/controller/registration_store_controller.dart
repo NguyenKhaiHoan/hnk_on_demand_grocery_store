@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/address_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
+import 'package:on_demand_grocery_store/src/services/location_service.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class RegistrationController extends GetxController {
@@ -17,25 +21,43 @@ class RegistrationController extends GetxController {
   var ward = ''.obs;
   final addressRepository = Get.put(AddressRepository());
   final addressController = Get.put(AddressController());
-  final userController = Get.put(UserController());
+  final storeController = Get.put(StoreController());
+  var isChoseCurrentPosition = false.obs;
+  var latitude = 0.0.obs;
+  var longitude = 0.0.obs;
+
+  Future<void> getCurrentPosition() async {
+    if (isChoseCurrentPosition.value) {
+      HAppUtils.loadingOverlaysAddress();
+      final currentPosition = await HLocationService.getGeoLocationPosition();
+      latitude.value = currentPosition.latitude;
+      longitude.value = currentPosition.longitude;
+      print('vị trí hiện tại: ${latitude.value}, ${longitude.value}');
+      HAppUtils.stopLoading();
+    }
+  }
 
   Future<void> saveInfo() async {
     try {
+      print('vào nhập địa chỉ');
       HAppUtils.loadingOverlays();
+      print('vị trí hiện tại: ${latitude.value}, ${longitude.value}');
 
       final isConnected = await NetworkController.instance.isConnected();
       if (!isConnected) {
         HAppUtils.stopLoading();
         return;
       }
+      print('kiểm tra mạng');
 
-      if (userController.user.value.storeImage == '' ||
-          userController.user.value.storeImageBackground == '') {
+      if (storeController.user.value.storeImage == '' ||
+          storeController.user.value.storeImageBackground == '') {
         HAppUtils.stopLoading();
         HAppUtils.showSnackBarWarning('Chọn ảnh',
             'Bạn chưa chọn đầy đủ ảnh. Hãy chọn đầy đủ ảnh đại diện và ảnh nền cho cửa hàng.');
         return;
       }
+      print('kiểm tra up ảnh');
 
       if (!addAddressFormKey.currentState!.validate() ||
           city.value == '' ||
@@ -46,6 +68,7 @@ class RegistrationController extends GetxController {
             'Bạn chưa điền đầy đủ địa chỉ. Hãy chọn đầy đủ Thành phố, Quận/Huyện, Phường/Xã và Số nhà, đường, ngõ.');
         return;
       }
+      print('kiểm tra địa chỉ');
 
       final address = AddressModel(
         id: '',
@@ -53,8 +76,8 @@ class RegistrationController extends GetxController {
         district: district.value,
         ward: ward.value,
         street: streetController.text.trim(),
-        latitude: 0.0,
-        longitude: 0.0,
+        latitude: latitude.value,
+        longitude: longitude.value,
       );
 
       final id = await addressRepository.addAndFindIdForNewAddress(address);
@@ -62,6 +85,8 @@ class RegistrationController extends GetxController {
 
       addressController.currentAddress.value = address;
       resetFormAddAddress();
+
+      registerStoreLocationInGeofire();
 
       Navigator.of(Get.context!).pop();
       Get.back();
@@ -76,6 +101,15 @@ class RegistrationController extends GetxController {
     city.value = '';
     district.value = '';
     ward.value = '';
+    longitude.value = 0;
+    latitude.value = 0;
     addAddressFormKey.currentState?.reset();
+  }
+
+  void registerStoreLocationInGeofire() async {
+    Position currentPosition = await HLocationService.getGeoLocationPosition();
+    Geofire.initialize('Stores');
+    Geofire.setLocation(AuthenticationRepository.instance.authUser!.uid,
+        currentPosition.latitude, currentPosition.longitude);
   }
 }

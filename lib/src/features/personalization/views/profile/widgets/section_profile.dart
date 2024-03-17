@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 
 class SectionProfileWidget extends StatelessWidget {
@@ -17,7 +17,7 @@ class SectionProfileWidget extends StatelessWidget {
     required this.isSubLoading,
   });
 
-  final userController = UserController.instance;
+  final userController = StoreController.instance;
   final bool isSubLoading;
   final String title2;
   final Function()? function;

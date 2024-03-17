@@ -54,6 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:297352060294:android:def685d34121b87987a007',
     messagingSenderId: '297352060294',
     projectId: 'grofast-ondemandgroceryapp',
+    databaseURL: 'https://grofast-ondemandgroceryapp-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'grofast-ondemandgroceryapp.appspot.com',
   );
 
@@ -62,6 +63,7 @@ class DefaultFirebaseOptions {
     appId: '1:297352060294:ios:e4e871fab7cdee0887a007',
     messagingSenderId: '297352060294',
     projectId: 'grofast-ondemandgroceryapp',
+    databaseURL: 'https://grofast-ondemandgroceryapp-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'grofast-ondemandgroceryapp.appspot.com',
     androidClientId: '297352060294-m3iqe6jo38lkitupoq0nlf8nsnthir7k.apps.googleusercontent.com',
     iosClientId: '297352060294-e7cpfgbj5nhqc9l8fqftu9gilgjqahk4.apps.googleusercontent.com',

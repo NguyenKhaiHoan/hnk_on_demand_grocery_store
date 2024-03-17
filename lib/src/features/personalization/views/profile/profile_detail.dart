@@ -7,7 +7,7 @@ import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_name_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_phone_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/profile/widgets/section_profile.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 
@@ -19,7 +19,7 @@ class ProfileDetailScreen extends StatefulWidget {
 }
 
 class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
-  final userController = UserController.instance;
+  final userController = StoreController.instance;
   final changeNameController = ChangeNameController.instance;
   var changePhoneController = Get.put(ChangePhoneController());
 

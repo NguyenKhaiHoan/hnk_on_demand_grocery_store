@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
-import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class ChangePhoneController extends GetxController {
@@ -10,8 +11,8 @@ class ChangePhoneController extends GetxController {
 
   final TextEditingController phoneController = TextEditingController();
   GlobalKey<FormState> changePhoneFormKey = GlobalKey<FormState>();
-  final userController = UserController.instance;
-  final userRepository = Get.put(UserRepository());
+  final storeController = StoreController.instance;
+  final storeRepository = Get.put(StoreRepository());
   var isLoading = false.obs;
 
   @override
@@ -21,8 +22,8 @@ class ChangePhoneController extends GetxController {
   }
 
   Future<void> initPhoneField() async {
-    if (userController.user.value.phoneNumber.isNotEmpty) {
-      phoneController.text = userController.user.value.phoneNumber;
+    if (storeController.user.value.phoneNumber.isNotEmpty) {
+      phoneController.text = storeController.user.value.phoneNumber;
     }
   }
 
@@ -43,10 +44,10 @@ class ChangePhoneController extends GetxController {
       }
 
       var phoneNumber = {'PhoneNumber': phoneController.text.trim()};
-      await userRepository.updateSingleField(phoneNumber);
+      await storeRepository.updateSingleField(phoneNumber);
 
-      userController.user.value.phoneNumber = phoneController.text.trim();
-      userController.user.refresh();
+      storeController.user.value.phoneNumber = phoneController.text.trim();
+      storeController.user.refresh();
 
       HAppUtils.stopLoading();
       HAppUtils.showSnackBarSuccess(

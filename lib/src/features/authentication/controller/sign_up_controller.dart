@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/models/user_model.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/models/store_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/delivery_person_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
-import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
@@ -24,6 +26,7 @@ class SignUpController extends GetxController {
 
   void signup() async {
     try {
+      print('Vào đăng ký');
       HAppUtils.loadingOverlays();
 
       if (!signupFormKey.currentState!.validate()) {
@@ -48,8 +51,9 @@ class SignUpController extends GetxController {
       final userCredential = await AuthenticationRepository.instance
           .registerWithEmailAndPassword(
               emailController.text.trim(), passController.text.trim());
+      print('đã đăng ký');
 
-      final newUser = UserModel(
+      final newUser = StoreModel(
           id: userCredential.user!.uid,
           name: nameController.text.trim(),
           email: emailController.text.trim(),
@@ -58,10 +62,18 @@ class SignUpController extends GetxController {
           storeImageBackground: '',
           description: descriptionController.text.trim(),
           creationDate: DateFormat('EEEE, d-M-y', 'vi').format(DateTime.now()),
-          authenticationBy: 'Email');
+          authenticationBy: 'Email',
+          listOfCategoryId: [],
+          rating: 5.0,
+          import: false,
+          isFamous: false,
+          productCount: 0,
+          cloudMessagingToken: '');
 
-      final userRepository = Get.put(UserRepository());
-      await userRepository.saveUserRecord(newUser);
+      final storeRepository = Get.put(StoreRepository());
+      await storeRepository.saveStoreRecord(newUser);
+
+      print('đã lưu');
 
       HAppUtils.stopLoading();
 

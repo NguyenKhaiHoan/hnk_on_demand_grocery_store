@@ -5,8 +5,11 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:on_demand_grocery_store/src/exceptions/firebase_auth_exceptions.dart';
 import 'package:on_demand_grocery_store/src/exceptions/firebase_exception.dart';
+import 'package:on_demand_grocery_store/src/features/authentication/controller/registration_store_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
+import 'package:on_demand_grocery_store/src/services/firebase_notification_service.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class AuthenticationRepository extends GetxController {
@@ -120,27 +123,35 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> checkUserRegistration(User user) async {
     try {
-      bool userIsRegistered = false;
+      bool storeIsRegistered = false;
       await _db
           .collection('Stores')
           .where('Id', isEqualTo: user.uid)
           .get()
           .then((value) {
-        userIsRegistered = value.size > 0 ? true : false;
+        storeIsRegistered = value.size > 0 ? true : false;
       });
-      if (userIsRegistered) {
+      print('vào check');
+      if (storeIsRegistered) {
+        print('đã đăng ký');
         if (user.emailVerified) {
+          HNotificationService.initializeFirebaseCloudMessaging();
+          print('đã xác thực');
           Get.offAllNamed(HAppRoutes.root);
+          final storeController = Get.put(StoreController());
           final addressRepository = Get.put(AddressRepository());
-          final addresses = await addressRepository.getUserAddress();
+          final addresses = await addressRepository.getStoreAddress();
           if (addresses.isEmpty) {
+            print('không có địa chỉ');
             Get.toNamed(HAppRoutes.registrationStore);
           }
         } else {
           Get.offAllNamed(HAppRoutes.verify, arguments: {'email': user.email});
         }
       } else {
-        HAppUtils.showSnackBarError('Lỗi', 'Cửa hàng chưa được đăng ký');
+        Get.offAllNamed(HAppRoutes.login);
+        HAppUtils.showSnackBarError(
+            'Lỗi', 'Cửa hàng chưa hoàn thành thủ tục đăng ký');
       }
     } catch (e) {
       Get.offAllNamed(HAppRoutes.login);

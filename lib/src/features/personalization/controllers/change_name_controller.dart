@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
-import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class ChangeNameController extends GetxController {
@@ -11,8 +12,8 @@ class ChangeNameController extends GetxController {
 
   final TextEditingController nameController = TextEditingController();
   GlobalKey<FormState> changeNameFormKey = GlobalKey<FormState>();
-  final userController = UserController.instance;
-  final userRepository = Get.put(UserRepository());
+  final storeController = StoreController.instance;
+  final storeRepository = Get.put(StoreRepository());
   final rootController = RootController.instance;
   var isLoading = false.obs;
 
@@ -23,7 +24,7 @@ class ChangeNameController extends GetxController {
   }
 
   Future<void> initNameField() async {
-    nameController.text = userController.user.value.name;
+    nameController.text = storeController.user.value.name;
   }
 
   changeName() async {
@@ -43,10 +44,10 @@ class ChangeNameController extends GetxController {
       }
 
       var name = {'Name': nameController.text.trim()};
-      await userRepository.updateSingleField(name);
+      await storeRepository.updateSingleField(name);
 
-      userController.user.value.name = nameController.text.trim();
-      userController.user.refresh();
+      storeController.user.value.name = nameController.text.trim();
+      storeController.user.refresh();
 
       HAppUtils.stopLoading();
       HAppUtils.showSnackBarSuccess(

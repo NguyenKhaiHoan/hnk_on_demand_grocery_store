@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/authentication/controller/registration_store_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
@@ -16,7 +17,7 @@ class LoginController extends GetxController {
   final localStorage = GetStorage();
   var isHide = true.obs;
   var isLoading = false.obs;
-  final userController = UserController.instance;
+  final storeController = StoreController.instance;
   final networkController = Get.put(NetworkController());
 
   void login() async {

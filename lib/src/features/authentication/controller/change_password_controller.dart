@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
@@ -19,7 +19,7 @@ class ChangePasswordController extends GetxController {
   var isHideNewPassword = false.obs;
   var isHideCorrectPassword = false.obs;
 
-  final userController = UserController.instance;
+  final storeController = StoreController.instance;
 
   changePassword() async {
     try {
@@ -38,7 +38,7 @@ class ChangePasswordController extends GetxController {
 
       await AuthenticationRepository.instance
           .changePasswordWithEmailAndPassword(
-              userController.user.value.email,
+              storeController.user.value.email,
               oldPasswordController.text.trim(),
               newPasswordController.text.trim());
 

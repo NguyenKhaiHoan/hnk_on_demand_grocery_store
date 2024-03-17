@@ -6,19 +6,20 @@ import 'package:intl/intl.dart';
 import 'package:on_demand_grocery_store/src/exceptions/firebase_exception.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/models/user_model.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/models/store_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
-import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
-class UserController extends GetxController {
-  static UserController get instance => Get.find();
+class StoreController extends GetxController {
+  static StoreController get instance => Get.find();
 
-  final userRepository = Get.put(UserRepository());
+  final storeRepository = Get.put(StoreRepository());
   final addressController = Get.put(AddressController());
   final authenticationRepository = Get.put(AuthenticationRepository());
 
-  var user = UserModel.empty().obs;
+  var user = StoreModel.empty().obs;
   var isLoading = false.obs;
   var isUploadImageLoading = false.obs;
   var isUploadImageBackgroundLoading = false.obs;
@@ -40,25 +41,38 @@ class UserController extends GetxController {
       .obs;
   var isSetAddressDeliveryTo = false.obs;
 
-  Future<void> saveUserRecord(
+  @override
+  void onInit() {
+    fetchStoreRecord();
+    super.onInit();
+  }
+
+  Future<void> saveStoreRecord(
       UserCredential? userCredential, String authenticationBy) async {
     try {
-      await fetchUserRecord();
+      await fetchStoreRecord();
       if (user.value.id.isEmpty) {
         if (userCredential != null) {
-          final user = UserModel(
-              id: userCredential.user!.uid,
-              name: userCredential.user!.displayName ?? '',
-              email: userCredential.user!.email ?? '',
-              phoneNumber: userCredential.user!.phoneNumber ?? '',
-              storeImage: userCredential.user!.photoURL ?? '',
-              storeImageBackground: '',
-              description: '',
-              creationDate:
-                  DateFormat('EEEE, d-M-y', 'vi').format(DateTime.now()),
-              authenticationBy: authenticationBy);
+          final user = StoreModel(
+            id: userCredential.user!.uid,
+            name: userCredential.user!.displayName ?? '',
+            email: userCredential.user!.email ?? '',
+            phoneNumber: userCredential.user!.phoneNumber ?? '',
+            storeImage: userCredential.user!.photoURL ?? '',
+            storeImageBackground: '',
+            description: '',
+            creationDate:
+                DateFormat('EEEE, d-M-y', 'vi').format(DateTime.now()),
+            authenticationBy: authenticationBy,
+            listOfCategoryId: [],
+            rating: 5.0,
+            import: false,
+            isFamous: false,
+            productCount: 0,
+            cloudMessagingToken: '',
+          );
 
-          await userRepository.saveUserRecord(user);
+          await storeRepository.saveStoreRecord(user);
         }
       }
     } on FirebaseException catch (e) {
@@ -69,16 +83,16 @@ class UserController extends GetxController {
     }
   }
 
-  Future<void> fetchUserRecord() async {
+  Future<void> fetchStoreRecord() async {
     try {
       isLoading.value = true;
-      final user = await userRepository.getUserInformation();
+      final user = await storeRepository.getStoreInformation();
       this.user(user);
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
       HAppUtils.showSnackBarError('Lỗi', 'Không tìm thấy dữ liệu của cửa hàng');
-      user(UserModel.empty());
+      user(StoreModel.empty());
     } finally {
       isLoading.value = false;
     }
@@ -94,12 +108,12 @@ class UserController extends GetxController {
         return;
       }
 
-      final user = await userRepository.getUserInformation();
+      final user = await storeRepository.getStoreInformation();
       this.user(user);
       HAppUtils.stopLoading();
     } catch (e) {
       HAppUtils.showSnackBarError('Lỗi', 'Không tìm thấy dữ liệu của cửa hàng');
-      user(UserModel.empty());
+      user(StoreModel.empty());
     } finally {
       HAppUtils.stopLoading();
     }
@@ -114,10 +128,10 @@ class UserController extends GetxController {
           maxWidth: 512);
       if (image != null) {
         isUploadImageLoading.value = true;
-        final imageUrl = await userRepository.uploadImage(
+        final imageUrl = await storeRepository.uploadImage(
             'Stores/${user.value.id}/Images/Profile', image);
         Map<String, dynamic> json = {'StoreImage': imageUrl};
-        await userRepository.updateSingleField(json);
+        await storeRepository.updateSingleField(json);
 
         user.value.storeImage = imageUrl;
         user.refresh();
@@ -139,10 +153,10 @@ class UserController extends GetxController {
           maxWidth: 512);
       if (image != null) {
         isUploadImageBackgroundLoading.value = true;
-        final imageUrl = await userRepository.uploadImage(
+        final imageUrl = await storeRepository.uploadImage(
             'Stores/${user.value.id}/Images/Profile', image);
         Map<String, dynamic> json = {'StoreImageBackground': imageUrl};
-        await userRepository.updateSingleField(json);
+        await storeRepository.updateSingleField(json);
 
         user.value.storeImageBackground = imageUrl;
         user.refresh();

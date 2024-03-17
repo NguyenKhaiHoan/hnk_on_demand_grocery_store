@@ -7,7 +7,7 @@ import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/registration_store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/district_ward_model.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
@@ -32,7 +32,7 @@ class _FormRegistrationStoreWidgetState
 
   final addressController = AddressController.instance;
   final registrationController = Get.put(RegistrationController());
-  final userController = UserController.instance;
+  final storeController = StoreController.instance;
 
   String? valueDistrict;
   String? valueWard;
@@ -111,11 +111,11 @@ class _FormRegistrationStoreWidgetState
                               decoration: BoxDecoration(
                                   color: HAppColor.hGreyColorShade300,
                                   borderRadius: BorderRadius.circular(10)),
-                              child: userController
+                              child: storeController
                                           .user.value.storeImageBackground !=
                                       ''
-                                  ? userController.isLoading.value ||
-                                          userController
+                                  ? storeController.isLoading.value ||
+                                          storeController
                                               .isUploadImageBackgroundLoading
                                               .value
                                       ? CustomShimmerWidget.rectangular(
@@ -125,7 +125,7 @@ class _FormRegistrationStoreWidgetState
                                           borderRadius:
                                               BorderRadius.circular(10.0),
                                           child: Image.network(
-                                            userController.user.value
+                                            storeController.user.value
                                                 .storeImageBackground,
                                             height: storeBackgroundHeight,
                                             width: HAppSize.deviceWidth,
@@ -141,7 +141,7 @@ class _FormRegistrationStoreWidgetState
                       bottom: 10 + storeBackgroundHeight / 2,
                       child: GestureDetector(
                         onTap: () =>
-                            userController.uploadStoreImageBackground(),
+                            storeController.uploadStoreImageBackground(),
                         child: Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
@@ -185,16 +185,16 @@ class _FormRegistrationStoreWidgetState
                         shape: BoxShape.circle,
                       ),
                       child: Obx(() =>
-                          userController.user.value.storeImage != ''
-                              ? userController.isLoading.value ||
-                                      userController.isUploadImageLoading.value
+                          storeController.user.value.storeImage != ''
+                              ? storeController.isLoading.value ||
+                                      storeController.isUploadImageLoading.value
                                   ? CustomShimmerWidget.circular(
                                       height: storeImageHeight,
                                       width: storeImageHeight,
                                     )
                                   : ClipOval(
                                       child: Image.network(
-                                        userController.user.value.storeImage,
+                                        storeController.user.value.storeImage,
                                         height: storeImageHeight,
                                         width: storeImageHeight,
                                       ),
@@ -205,7 +205,7 @@ class _FormRegistrationStoreWidgetState
                         right: 10,
                         bottom: 10,
                         child: GestureDetector(
-                          onTap: () => userController.uploadStoreImage(),
+                          onTap: () => storeController.uploadStoreImage(),
                           child: Container(
                             padding: const EdgeInsets.all(5),
                             decoration: BoxDecoration(
@@ -363,6 +363,30 @@ class _FormRegistrationStoreWidgetState
             ],
           ),
           gapH12,
+          Obx(() => SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Lấy vị trí hiện tại',
+                style: HAppStyle.paragraph2Regular,
+              ),
+              trackOutlineColor: MaterialStateProperty.resolveWith(
+                (final Set<MaterialState> states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return null;
+                  }
+                  return HAppColor.hGreyColorShade300;
+                },
+              ),
+              activeColor: HAppColor.hBluePrimaryColor,
+              activeTrackColor: HAppColor.hBlueSecondaryColor,
+              inactiveThumbColor: HAppColor.hWhiteColor,
+              inactiveTrackColor: HAppColor.hGreyColorShade300,
+              value: registrationController.isChoseCurrentPosition.value,
+              onChanged: (changed) {
+                registrationController.isChoseCurrentPosition.value = changed;
+                registrationController.getCurrentPosition();
+              })),
+          gapH6,
           ElevatedButton(
             onPressed: () {
               FocusScope.of(context).requestFocus(FocusNode());

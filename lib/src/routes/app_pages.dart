@@ -11,6 +11,7 @@ import 'package:on_demand_grocery_store/src/features/authentication/views/verify
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_name/change_name_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_phone_number/change_phone_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/no_deliver/no_deliver_screen.dart';
+import 'package:on_demand_grocery_store/src/features/shop/views/all_product/all_product_screen.dart';
 import 'package:on_demand_grocery_store/src/features/shop/views/root/root_screen.dart';
 
 abstract class HAppPages {
@@ -18,6 +19,13 @@ abstract class HAppPages {
     GetPage(
       name: HAppRoutes.login,
       page: () => const LoginScreen(),
+      transitionDuration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+      transition: Transition.rightToLeftWithFade,
+    ),
+    GetPage(
+      name: HAppRoutes.allProduct,
+      page: () => AllProductScreen(),
       transitionDuration: const Duration(milliseconds: 500),
       curve: Curves.easeOut,
       transition: Transition.rightToLeftWithFade,
@@ -118,4 +126,6 @@ abstract class HAppRoutes {
   static const noDeliver = '/noDeliver';
   static const completeAccount = '/completeAccount';
   static const registrationStore = '/registrationStore';
+  static const productDetail = '/productDetail';
+  static const allProduct = '/allProduct';
 }

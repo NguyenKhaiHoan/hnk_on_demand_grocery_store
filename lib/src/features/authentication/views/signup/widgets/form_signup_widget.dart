@@ -142,7 +142,7 @@ class FormSignUpWidget extends StatelessWidget {
               )),
           gapH12,
           TextFormField(
-            keyboardType: TextInputType.number,
+            keyboardType: TextInputType.text,
             enableSuggestions: true,
             autocorrect: true,
             controller: signupController.descriptionController,

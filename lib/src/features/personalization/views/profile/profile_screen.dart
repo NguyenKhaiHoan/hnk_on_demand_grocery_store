@@ -1,10 +1,12 @@
+import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/user_image_logo.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
-import 'package:on_demand_grocery_store/src/features/personalization/controllers/user_controller.dart';
+import 'package:on_demand_grocery_store/src/features/authentication/controller/registration_store_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
@@ -22,7 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   bool get wantKeepAlive => true;
 
-  final userController = UserController.instance;
+  final userController = StoreController.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -95,17 +97,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                 style: HAppStyle.heading4Style,
               ),
               // GestureDetector(
-              //   onTap: () => Get.toNamed(HAppRoutes.listOrder),
-              //   child: const ListTile(
-              //     contentPadding: EdgeInsets.zero,
-              //     leading: Icon(EvaIcons.shoppingBagOutline),
-              //     title: Text('Đơn hàng'),
-              //     trailing: Icon(
-              //       Icons.arrow_forward_ios,
-              //       size: 15,
-              //     ),
-              //   ),
+              //   onTap: () {
+              //     final registrationController =
+              //         Get.put(RegistrationController());
+              //     registrationController.registerStoreLocationInGeofire();
+              //   },
+              //   child: Text('Set location'),
               // ),
+              GestureDetector(
+                onTap: () => Get.toNamed(HAppRoutes.allProduct),
+                child: const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(EvaIcons.grid),
+                  title: Text('Tất cả sản phẩm'),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 15,
+                  ),
+                ),
+              ),
               // GestureDetector(
               //   onTap: () => Get.toNamed(HAppRoutes.cart),
               //   child: const ListTile(
@@ -189,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               //     size: 15,
               //   ),
               // ),
-              // gapH6,
+              gapH6,
               Center(
                 child: GestureDetector(
                   onTap: () {
