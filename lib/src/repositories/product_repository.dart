@@ -12,9 +12,7 @@ class ProductRepository extends GetxController {
 
   Future<List<ProductModel>> getAllProducts() async {
     try {
-      print('vào product');
       final user = AuthenticationRepository.instance.authUser!;
-      print('lấy id: ${user.uid}');
       final snapshot = await _db
           .collection('Products')
           .where('StoreId', isEqualTo: user.uid)
@@ -24,12 +22,10 @@ class ProductRepository extends GetxController {
       final list = snapshot.docs
           .map((document) => ProductModel.fromDocumentSnapshot(document))
           .toList();
-      print('lấy được list ${list.length}');
       return list;
     } on FirebaseException catch (e) {
       throw HFirebaseException(code: e.code).message;
     } catch (e) {
-      print(e.toString());
       throw e.toString();
     }
   }

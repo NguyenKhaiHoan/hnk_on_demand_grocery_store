@@ -48,7 +48,7 @@ class AddressRepository extends GetxController {
           .collection('Stores')
           .doc(storeId)
           .collection('Addresses')
-          .add(address.toJon());
+          .add(address.toJson());
       return currentAddress.id;
     } catch (e) {
       throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';

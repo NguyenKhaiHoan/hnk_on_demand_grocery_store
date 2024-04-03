@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,6 +10,7 @@ import 'package:on_demand_grocery_store/src/features/personalization/controllers
 import 'package:on_demand_grocery_store/src/features/personalization/models/address_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/services/location_service.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
@@ -84,9 +87,8 @@ class RegistrationController extends GetxController {
       address.id = id;
 
       addressController.currentAddress.value = address;
+      StoreRepository.instance.updateSingleField({'Address': address.toJson()});
       resetFormAddAddress();
-
-      registerStoreLocationInGeofire();
 
       Navigator.of(Get.context!).pop();
       Get.back();
@@ -104,12 +106,5 @@ class RegistrationController extends GetxController {
     longitude.value = 0;
     latitude.value = 0;
     addAddressFormKey.currentState?.reset();
-  }
-
-  void registerStoreLocationInGeofire() async {
-    Position currentPosition = await HLocationService.getGeoLocationPosition();
-    Geofire.initialize('Stores');
-    Geofire.setLocation(AuthenticationRepository.instance.authUser!.uid,
-        currentPosition.latitude, currentPosition.longitude);
   }
 }

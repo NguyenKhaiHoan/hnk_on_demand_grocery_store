@@ -59,12 +59,10 @@ class DummyData {
 
   static Future<void> getAllProducts() async {
     List<ProductModel> list = [];
-    print('vào get All product');
     final storeController = StoreController.instance;
     final categoryController = CategoryController.instance;
     final categoryIds = getRandomElements(categoryController.listOfCategory,
         randomInt(10, categoryController.listOfCategory.length));
-    print('cate length:${categoryIds.length}');
 
     StoreModel store = storeController.user.value;
     store.listOfCategoryId.assignAll(categoryIds);

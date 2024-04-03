@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_demand_grocery_store/src/features/authentication/controller/network_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
-import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
-import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
 import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
@@ -14,7 +12,6 @@ class ChangeNameController extends GetxController {
   GlobalKey<FormState> changeNameFormKey = GlobalKey<FormState>();
   final storeController = StoreController.instance;
   final storeRepository = Get.put(StoreRepository());
-  final rootController = RootController.instance;
   var isLoading = false.obs;
 
   @override

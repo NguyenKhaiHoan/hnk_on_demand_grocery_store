@@ -26,7 +26,6 @@ class SignUpController extends GetxController {
 
   void signup() async {
     try {
-      print('Vào đăng ký');
       HAppUtils.loadingOverlays();
 
       if (!signupFormKey.currentState!.validate()) {
@@ -51,7 +50,6 @@ class SignUpController extends GetxController {
       final userCredential = await AuthenticationRepository.instance
           .registerWithEmailAndPassword(
               emailController.text.trim(), passController.text.trim());
-      print('đã đăng ký');
 
       final newUser = StoreModel(
           id: userCredential.user!.uid,
@@ -72,8 +70,6 @@ class SignUpController extends GetxController {
 
       final storeRepository = Get.put(StoreRepository());
       await storeRepository.saveStoreRecord(newUser);
-
-      print('đã lưu');
 
       HAppUtils.stopLoading();
 

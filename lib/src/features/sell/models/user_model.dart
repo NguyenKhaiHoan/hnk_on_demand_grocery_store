@@ -6,11 +6,6 @@ class UserModel {
   String email;
   String phoneNumber;
   String profileImage;
-  String creationDate;
-  String authenticationBy;
-  List<String> listOfFavoriteProduct;
-  List<String> listOfFavoriteStore;
-  List<String> listOfRegisterNotificationProduct;
   String cloudMessagingToken;
 
   UserModel(
@@ -19,11 +14,6 @@ class UserModel {
       required this.email,
       required this.phoneNumber,
       required this.profileImage,
-      required this.creationDate,
-      required this.authenticationBy,
-      required this.listOfFavoriteProduct,
-      required this.listOfFavoriteStore,
-      required this.listOfRegisterNotificationProduct,
       required this.cloudMessagingToken});
 
   static UserModel empty() => UserModel(
@@ -32,25 +22,15 @@ class UserModel {
       email: '',
       phoneNumber: '',
       profileImage: '',
-      creationDate: '',
-      authenticationBy: '',
-      listOfFavoriteProduct: [],
-      listOfFavoriteStore: [],
-      listOfRegisterNotificationProduct: [],
       cloudMessagingToken: '');
 
-  Map<String, dynamic> toJon() {
+  Map<String, dynamic> toJson() {
     return {
       'Id': id,
       'Name': name,
       'Email': email,
       'PhoneNumber': phoneNumber,
       'ProfileImage': profileImage,
-      'CreationDate': creationDate,
-      'AuthenticationBy': authenticationBy,
-      'ListOfFavoriteProduct': listOfFavoriteProduct,
-      'ListOfFavoriteStore': listOfFavoriteStore,
-      'ListOfRegisterNotificationProduct': listOfRegisterNotificationProduct,
       'CloudMessagingToken': cloudMessagingToken
     };
   }
@@ -64,18 +44,6 @@ class UserModel {
         email: data['Email'] ?? '',
         phoneNumber: data['PhoneNumber'] ?? '',
         profileImage: data['ProfileImage'] ?? '',
-        creationDate: data['CreationDate'] ?? '',
-        authenticationBy: data['AuthenticationBy'] ?? '',
-        listOfFavoriteProduct: data['ListOfFavoriteProduct'] != null
-            ? List<String>.from(data['ListOfFavoriteProduct'])
-            : [],
-        listOfFavoriteStore: data['ListOfFavoriteStore'] != null
-            ? List<String>.from(data['ListOfFavoriteStore'])
-            : [],
-        listOfRegisterNotificationProduct:
-            data['ListOfRegisterNotificationProduct'] != null
-                ? List<String>.from(data['ListOfRegisterNotificationProduct'])
-                : [],
         cloudMessagingToken: data['CloudMessagingToken'] ?? '');
   }
 
@@ -86,12 +54,6 @@ class UserModel {
       email: json['Email'] ?? '',
       phoneNumber: json['PhoneNumber'] ?? '',
       profileImage: json['ProfileImage'] ?? '',
-      creationDate: json['CreationDate'] ?? '',
-      authenticationBy: json['AuthenticationBy'] ?? '',
-      listOfFavoriteProduct: List<String>.from(json['ListOfFavoriteProduct']),
-      listOfFavoriteStore: List<String>.from(json['ListOfFavoriteStore']),
-      listOfRegisterNotificationProduct:
-          List<String>.from(json['ListOfRegisterNotificationProduct']),
       cloudMessagingToken: json['CloudMessagingToken'],
     );
   }

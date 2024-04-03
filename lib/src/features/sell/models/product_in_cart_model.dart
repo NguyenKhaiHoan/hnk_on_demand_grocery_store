@@ -8,7 +8,7 @@ class ProductInCartModel {
   int quantity;
   String storeId;
   String? storeName;
-  String? categoryId;
+  String? unit;
   ProductInCartModel(
       {required this.productId,
       this.productName,
@@ -17,7 +17,7 @@ class ProductInCartModel {
       required this.quantity,
       required this.storeId,
       this.storeName,
-      this.categoryId});
+      this.unit});
 
   static ProductInCartModel empty() =>
       ProductInCartModel(productId: '', quantity: 0, storeId: '');
@@ -31,20 +31,20 @@ class ProductInCartModel {
       'Quantity': quantity,
       'StoreId': storeId,
       'StoreName': storeName,
-      'CategoryId': categoryId,
+      'Unit': unit,
     };
   }
 
   factory ProductInCartModel.fromJson(Map<String, dynamic> json) {
     return ProductInCartModel(
       productId: json['ProductId'],
-      productName: json['ProductName'] ?? '',
-      image: json['Image'] ?? '',
+      productName: json['ProductName'],
+      image: json['Image'],
       price: json['Price'],
       quantity: json['Quantity'],
       storeId: json['StoreId'],
-      storeName: json['StoreName'] ?? '',
-      categoryId: json['CategoryId'],
+      storeName: json['StoreName'],
+      unit: json['Unit'],
     );
   }
 
@@ -60,7 +60,7 @@ class ProductInCartModel {
         quantity: int.parse((data['Quantity'] ?? 0).toString()),
         storeId: data['StoreId'] ?? '',
         storeName: data['StoreName'] ?? '',
-        categoryId: data['CategoryId'] ?? '',
+        unit: data['Unit'] ?? '',
       );
     }
     return ProductInCartModel.empty();

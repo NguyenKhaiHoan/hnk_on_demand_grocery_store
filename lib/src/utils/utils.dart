@@ -11,6 +11,21 @@ import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:toastification/toastification.dart';
 
 class HAppUtils {
+  static orderStatus(int status) {
+    switch (status) {
+      case 0:
+        return 'Đơn đặt hàng thành công';
+      case 1:
+        return 'Cửa hàng xác nhận';
+      case 2:
+        return 'Người giao hàng xác nhận';
+      case 3:
+        return 'Người giao hàng đã lấy hàng';
+      case 4:
+        return 'Đơn giao tới nơi';
+    }
+  }
+
   static String vietNamCurrencyFormatting(int amount) {
     return '${amount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}₫';
   }

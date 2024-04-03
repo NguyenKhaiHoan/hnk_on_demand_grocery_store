@@ -1,9 +1,16 @@
+import 'dart:developer';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/delivery_person_controller.dart';
+import 'package:on_demand_grocery_store/src/repositories/address_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class HLocationService {
@@ -68,20 +75,22 @@ class HLocationService {
   }
 
   static Future<void> getNearbyDeliveryPersons() async {
-    final deliveryPersonController = Get.put(DeliveryPersonController());
-    deliveryPersonController.allNearbyDeliveryPersons.clear();
-    final currentPosition = await getGeoLocationPosition();
+    final deliveryPersonController = DeliveryPersonController.instance;
+    final addressRepository = Get.put(AddressRepository());
+    deliveryPersonController.allNearbydeliveryPersonsId.clear();
+    final currentPosition = await addressRepository.getStoreAddress();
     Geofire.initialize('DeliveryPersons');
     try {
-      Geofire.queryAtLocation(
-              currentPosition.latitude, currentPosition.longitude, 3)!
-          .listen((map) {
+      Geofire.queryAtLocation(currentPosition.first.latitude,
+              currentPosition.first.longitude, 3)!
+          .listen((map) async {
         print(map);
         if (map != null) {
           var callBack = map['callBack'];
           switch (callBack) {
             case Geofire.onKeyEntered:
-              deliveryPersonController.addNearbyDeliveryPersons(map['key']);
+              log('key: ${map['key']}');
+              deliveryPersonController.addNearbyDeliveryPerson(map['key']);
               break;
             case Geofire.onKeyExited:
               deliveryPersonController.removeNearbyDeliveryPerson(map['key']);
@@ -95,6 +104,28 @@ class HLocationService {
       });
     } on PlatformException {
       print('Failed to get platform version.');
+    }
+  }
+
+  static checkStatus(bool online) async {
+    if (online) {
+      var addressModel = await AddressRepository.instance.getStoreAddress();
+      Geofire.initialize('Stores');
+      Geofire.setLocation(AuthenticationRepository.instance.authUser!.uid,
+          addressModel.first.latitude, addressModel.first.longitude);
+      await StoreRepository.instance.updateSingleField({'Status': true});
+      StoreController.instance.user.value.status == true;
+      StoreController.instance.user.refresh();
+      HAppUtils.showSnackBarSuccess(
+          "Bật nhận đơn", 'Bạn đã bật nhận đơn thành công');
+    } else {
+      log('Vào đây');
+      Geofire.removeLocation(AuthenticationRepository.instance.authUser!.uid);
+      await StoreRepository.instance.updateSingleField({'Status': true});
+      StoreController.instance.user.value.status == false;
+      StoreController.instance.user.refresh();
+      HAppUtils.showSnackBarSuccess(
+          "Đóng nhận đơn", 'Bạn đã đóng nhận đơn thành công');
     }
   }
 }

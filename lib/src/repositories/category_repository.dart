@@ -10,12 +10,10 @@ class CategoryRepository extends GetxController {
 
   Future<List<CategoryModel>> getAllCategories() async {
     try {
-      print('vào getAll');
       final snapshot = await _db.collection('Categories').get();
       final list = snapshot.docs
           .map((document) => CategoryModel.fromDocumentSnapshot(document))
           .toList();
-      print('cate length: ${list.length}');
 
       return list;
     } on FirebaseException catch (e) {

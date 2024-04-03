@@ -11,8 +11,8 @@ import 'package:on_demand_grocery_store/src/features/authentication/views/verify
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_name/change_name_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_phone_number/change_phone_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/no_deliver/no_deliver_screen.dart';
-import 'package:on_demand_grocery_store/src/features/shop/views/all_product/all_product_screen.dart';
-import 'package:on_demand_grocery_store/src/features/shop/views/root/root_screen.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/drawer/drawer_screen.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/order_detail_screen.dart';
 
 abstract class HAppPages {
   static final pages = [
@@ -23,16 +23,16 @@ abstract class HAppPages {
       curve: Curves.easeOut,
       transition: Transition.rightToLeftWithFade,
     ),
+    // GetPage(
+    //   name: HAppRoutes.allProduct,
+    //   page: () => AllProductScreen(),
+    //   transitionDuration: const Duration(milliseconds: 500),
+    //   curve: Curves.easeOut,
+    //   transition: Transition.rightToLeftWithFade,
+    // ),
     GetPage(
-      name: HAppRoutes.allProduct,
-      page: () => AllProductScreen(),
-      transitionDuration: const Duration(milliseconds: 500),
-      curve: Curves.easeOut,
-      transition: Transition.rightToLeftWithFade,
-    ),
-    GetPage(
-      name: HAppRoutes.root,
-      page: () => const RootScreen(),
+      name: HAppRoutes.drawer,
+      page: () => const DrawerScreen(),
       transitionDuration: const Duration(milliseconds: 500),
       curve: Curves.easeOut,
       transition: Transition.fadeIn,
@@ -107,12 +107,19 @@ abstract class HAppPages {
       curve: Curves.easeOut,
       transition: Transition.fadeIn,
     ),
+    GetPage(
+      name: HAppRoutes.orderDetail,
+      page: () => OrderDetailScreen(),
+      transitionDuration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+      transition: Transition.rightToLeftWithFade,
+    ),
   ];
 }
 
 abstract class HAppRoutes {
   static const onboarding = '/onboarding';
-  static const root = '/root';
+  static const drawer = '/drawer';
   static const login = '/login';
   static const verify = '/verify';
   static const complete = '/complete';
@@ -128,4 +135,5 @@ abstract class HAppRoutes {
   static const registrationStore = '/registrationStore';
   static const productDetail = '/productDetail';
   static const allProduct = '/allProduct';
+  static const orderDetail = '/orderDetail';
 }

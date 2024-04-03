@@ -35,7 +35,7 @@ class DeliveryPersonRepository extends GetxController {
     } on FirebaseException catch (e) {
       throw HFirebaseException(code: e.code).message;
     } catch (e) {
-      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';
+      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau. ${e.toString()}';
     }
   }
 

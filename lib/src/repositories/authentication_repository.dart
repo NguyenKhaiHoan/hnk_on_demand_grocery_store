@@ -131,18 +131,14 @@ class AuthenticationRepository extends GetxController {
           .then((value) {
         storeIsRegistered = value.size > 0 ? true : false;
       });
-      print('vào check');
       if (storeIsRegistered) {
-        print('đã đăng ký');
         if (user.emailVerified) {
-          HNotificationService.initializeFirebaseCloudMessaging();
-          print('đã xác thực');
-          Get.offAllNamed(HAppRoutes.root);
+          // HNotificationService.initializeFirebaseCloudMessaging();
+          Get.offAllNamed(HAppRoutes.drawer);
           final storeController = Get.put(StoreController());
           final addressRepository = Get.put(AddressRepository());
           final addresses = await addressRepository.getStoreAddress();
           if (addresses.isEmpty) {
-            print('không có địa chỉ');
             Get.toNamed(HAppRoutes.registrationStore);
           }
         } else {

@@ -5,9 +5,7 @@ import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget
 import 'package:on_demand_grocery_store/src/common_widgets/user_image_logo.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
-import 'package:on_demand_grocery_store/src/features/authentication/controller/registration_store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
-import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
@@ -204,10 +202,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                 child: GestureDetector(
                   onTap: () {
                     AuthenticationRepository.instance.logOut();
-                    RootController.instance.animateToScreen(0);
                   },
                   child: const Text('Đăng xuất'),
                 ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Get.toNamed(HAppRoutes.orderDetail);
+                },
+                child: Text('Set location'),
               ),
               gapH24,
             ]),

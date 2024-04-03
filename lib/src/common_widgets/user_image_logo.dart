@@ -3,7 +3,6 @@ import 'package:image_network/image_network.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
-import 'package:on_demand_grocery_store/src/features/shop/controllers/root_controller.dart';
 
 class UserImageLogoWidget extends StatelessWidget {
   UserImageLogoWidget({
@@ -14,8 +13,6 @@ class UserImageLogoWidget extends StatelessWidget {
 
   final bool hasFunction;
   final storeController = StoreController.instance;
-  final rootController = RootController.instance;
-
   final double size;
 
   @override
@@ -25,8 +22,7 @@ class UserImageLogoWidget extends StatelessWidget {
         ? CustomShimmerWidget.circular(width: size, height: size)
         : storeController.user.value.storeImage == ''
             ? GestureDetector(
-                onTap: () =>
-                    hasFunction ? rootController.animateToScreen(4) : null,
+                onTap: () {},
                 child: Container(
                   color: HAppColor.hBackgroundColor,
                   width: size,
@@ -53,8 +49,7 @@ class UserImageLogoWidget extends StatelessWidget {
                   Icons.error,
                   color: Colors.red,
                 ),
-                onTap: () =>
-                    hasFunction ? rootController.animateToScreen(4) : null,
+                onTap: () => null,
               );
   }
 }
