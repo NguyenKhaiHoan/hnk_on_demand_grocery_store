@@ -24,6 +24,8 @@ class DeliveryPersonController extends GetxController {
   removeNearbyDeliveryPerson(String id) {
     int index =
         allNearbydeliveryPersonsId.indexWhere((nearbyId) => nearbyId == id);
-    allNearbydeliveryPersonsId.removeAt(index);
+    if (index >= 0) {
+      allNearbydeliveryPersonsId.removeAt(index);
+    }
   }
 }

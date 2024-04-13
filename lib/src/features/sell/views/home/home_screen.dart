@@ -4,14 +4,12 @@ import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
 import 'package:image_network/image_network.dart';
 import 'package:intl/intl.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
-import 'package:on_demand_grocery_store/src/data/dummy_data.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/category_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/order_controller.dart';
@@ -23,7 +21,6 @@ import 'package:on_demand_grocery_store/src/features/sell/models/store_note_mode
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 import 'package:on_demand_grocery_store/src/services/location_service.dart';
-import 'package:on_demand_grocery_store/src/services/messaging_service.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 import 'package:rounded_background_text/rounded_background_text.dart';
@@ -69,29 +66,116 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           actions: [
-            Padding(
-              padding: hAppDefaultPaddingR,
-              child: Obx(() {
-                return Switch(
-                    trackOutlineColor: MaterialStateProperty.resolveWith(
-                      (final Set<MaterialState> states) {
-                        if (states.contains(MaterialState.selected)) {
-                          return null;
-                        }
-                        return HAppColor.hGreyColorShade300;
-                      },
-                    ),
-                    activeColor: HAppColor.hBluePrimaryColor,
-                    activeTrackColor: HAppColor.hBlueSecondaryColor,
-                    inactiveThumbColor: HAppColor.hWhiteColor,
-                    inactiveTrackColor: HAppColor.hGreyColorShade300,
-                    value: online.value,
-                    onChanged: (changed) async {
-                      online.value = changed;
-                      HLocationService.checkStatus(online.value);
-                    });
-              }),
-            )
+            Obx(() => online.value
+                ? StreamBuilder(
+                    stream: FirebaseDatabase.instance
+                        .ref()
+                        .child(
+                            'Stores/${StoreController.instance.user.value.id}')
+                        .onValue,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Container();
+                      }
+                      if (snapshot.hasError) {
+                        return Container();
+                      }
+
+                      if (!snapshot.hasData ||
+                          snapshot.data!.snapshot.value == null) {
+                        return Padding(
+                          padding: hAppDefaultPaddingR,
+                          child: Switch(
+                              trackOutlineColor:
+                                  MaterialStateProperty.resolveWith(
+                                (final Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.selected)) {
+                                    return null;
+                                  }
+                                  return HAppColor.hGreyColorShade300;
+                                },
+                              ),
+                              activeColor: HAppColor.hBluePrimaryColor,
+                              activeTrackColor: HAppColor.hBlueSecondaryColor,
+                              inactiveThumbColor: HAppColor.hWhiteColor,
+                              inactiveTrackColor: HAppColor.hGreyColorShade300,
+                              value: online.value,
+                              onChanged: (changed) async {
+                                online.value = changed;
+                                HLocationService.checkStatus(online.value);
+                              }),
+                        );
+                      }
+                      return Padding(
+                        padding: hAppDefaultPaddingR,
+                        child: Obx(() {
+                          return Switch(
+                              trackOutlineColor:
+                                  MaterialStateProperty.resolveWith(
+                                (final Set<MaterialState> states) {
+                                  if (states.contains(MaterialState.selected)) {
+                                    return null;
+                                  }
+                                  return HAppColor.hGreyColorShade300;
+                                },
+                              ),
+                              activeColor: HAppColor.hBluePrimaryColor,
+                              activeTrackColor: HAppColor.hBlueSecondaryColor,
+                              inactiveThumbColor: HAppColor.hWhiteColor,
+                              inactiveTrackColor: HAppColor.hGreyColorShade300,
+                              value: online.value,
+                              onChanged: (changed) async {
+                                online.value = changed;
+                                HLocationService.checkStatus(online.value);
+                              });
+                        }),
+                      );
+                    },
+                  )
+                : Padding(
+                    padding: hAppDefaultPaddingR,
+                    child: Switch(
+                        trackOutlineColor: MaterialStateProperty.resolveWith(
+                          (final Set<MaterialState> states) {
+                            if (states.contains(MaterialState.selected)) {
+                              return null;
+                            }
+                            return HAppColor.hGreyColorShade300;
+                          },
+                        ),
+                        activeColor: HAppColor.hBluePrimaryColor,
+                        activeTrackColor: HAppColor.hBlueSecondaryColor,
+                        inactiveThumbColor: HAppColor.hWhiteColor,
+                        inactiveTrackColor: HAppColor.hGreyColorShade300,
+                        value: online.value,
+                        onChanged: (changed) async {
+                          online.value = changed;
+                          HLocationService.checkStatus(online.value);
+                        }),
+                  )),
+            // Padding(
+            //   padding: hAppDefaultPaddingR,
+            //   child: Obx(() {
+            //     return Switch(
+            //         trackOutlineColor: MaterialStateProperty.resolveWith(
+            //           (final Set<MaterialState> states) {
+            //             if (states.contains(MaterialState.selected)) {
+            //               return null;
+            //             }
+            //             return HAppColor.hGreyColorShade300;
+            //           },
+            //         ),
+            //         activeColor: HAppColor.hBluePrimaryColor,
+            //         activeTrackColor: HAppColor.hBlueSecondaryColor,
+            //         inactiveThumbColor: HAppColor.hWhiteColor,
+            //         inactiveTrackColor: HAppColor.hGreyColorShade300,
+            //         value: online.value,
+            //         onChanged: (changed) async {
+            //           online.value = changed;
+            //           HLocationService.checkStatus(online.value);
+            //         });
+            //   }),
+            // )
           ],
         ),
         body: SingleChildScrollView(
@@ -108,7 +192,15 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, snapshot, animation, index) {
                 final orderData = snapshot.value as Map;
                 if (orderData.isEmpty || orderData == null) {
-                  return const Text('Không có đơn mới bây giờ');
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Không có đơn mới bây giờ'),
+                  );
+                } else if (orderData['StoreOrders'] == null) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Không có đơn mới bây giờ'),
+                  );
                 } else {
                   final storeOrdersData =
                       (orderData['StoreOrders'] as List<dynamic>).map((e) {

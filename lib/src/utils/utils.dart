@@ -257,6 +257,43 @@ class HAppUtils {
     return null;
   }
 
+  static String? validatePercentageNumber(String? value) {
+    validateEmptyField('Phần trăm giảm', value);
+
+    if (int.parse(value!) <= 0 && int.parse(value) > 100) {
+      return 'Phần trăm không hợp lệ.';
+    }
+
+    return null;
+  }
+
+  static String? validateDiscountNumber(String? value) {
+    validateEmptyField('Giá trị giảm', value);
+
+    if (int.parse(value!) <= 0) {
+      return 'Số tiền không hợp lệ.';
+    }
+    return null;
+  }
+
+  static String? validateMinNumber(String? value) {
+    if (value != null && value.isNotEmpty) {
+      if (int.parse(value) < 0) {
+        return 'Số tiền không hợp lệ.';
+      }
+    }
+    return null;
+  }
+
+  static String? validateQuantityNumber(String? value) {
+    if (value != null && value.isNotEmpty) {
+      if (int.parse(value) < 0) {
+        return 'Số lượng không hợp lệ.';
+      }
+    }
+    return null;
+  }
+
   static void loadingOverlaysAddress() {
     showDialog(
         context: Get.overlayContext!,

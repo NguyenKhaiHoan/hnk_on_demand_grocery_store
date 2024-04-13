@@ -10,9 +10,11 @@ import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_key.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/models/store_model.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/user_address_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/delivery_person_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/order_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/store_note_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/user_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:http/http.dart' as http;
@@ -143,18 +145,111 @@ class HNotificationService {
   static sendNotificationToNearbyDeliveryPersons(
       DeliveryPersonModel nearbyDeliveryPerson, OrderModel order) async {
     try {
+      const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      var data = {};
+
+      if (order.orderType == 'uu_tien') {
+        data = {
+          'priority': 'high',
+          "to": nearbyDeliveryPerson.cloudMessagingToken,
+          "notification": {
+            "title": 'Đơn giao hàng mới',
+            "body": 'Có đơn hàng mới được đặt',
+          },
+          "data": {
+            "order": order.toJson(),
+            "storeId": StoreController.instance.user.value.id
+          }
+        };
+      } else {
+        data = {
+          "to": nearbyDeliveryPerson.cloudMessagingToken,
+          "notification": {
+            "title": 'Đơn giao hàng mới',
+            "body": 'Có đơn hàng mới được đặt',
+          },
+          "data": {
+            "order": order.toJson(),
+            "storeId": StoreController.instance.user.value.id
+          }
+        };
+      }
+
+      print(order.orderUserAddress.toString());
+
+      final headers = {
+        'content-type': 'application/json',
+        'Authorization': 'key=${HAppKey.fcmKeyServer}'
+      };
+      print('Chờ vào gửi tin');
+
+      await http
+          .post(Uri.parse(postUrl),
+              body: json.encode(data),
+              encoding: Encoding.getByName('utf-8'),
+              headers: headers)
+          .then((value) => print('${value.body}'))
+          .timeout(const Duration(seconds: 60), onTimeout: () {
+        log('Đã hết thời gian kết nối');
+        throw TimeoutException('Đã hết thời gian kết nối');
+      }).onError((error, stackTrace) {
+        HAppUtils.showSnackBarError('Lỗi', error.toString());
+        throw Exception(error);
+      });
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  static sendNotificationToUserByOneReject(
+      OrderModel order, StoreOrderModel store) async {
+    try {
       print('Đã vào gửi tin');
       const postUrl = 'https://fcm.googleapis.com/fcm/send';
       final data = {
-        "to": nearbyDeliveryPerson.cloudMessagingToken,
+        "to": order.orderUser.cloudMessagingToken,
         "notification": {
-          "title": 'Đơn giao hàng mới',
-          "body": 'Có đơn hàng mới được đặt',
+          "title": 'Từ chối',
+          "body": 'Đơn hàng của bạn bị từ chối bởi cửa hàng: ${store.name}',
         },
-        "data": {
-          "order": order.toJson(),
-          "storeId": StoreController.instance.user.value.id
-        }
+        "data": {"reject": 'Bị từ chối', 'order': order.toJson()}
+      };
+
+      final headers = {
+        'content-type': 'application/json',
+        'Authorization': 'key=${HAppKey.fcmKeyServer}'
+      };
+      print('Chờ vào gửi tin');
+
+      await http
+          .post(Uri.parse(postUrl),
+              body: json.encode(data),
+              encoding: Encoding.getByName('utf-8'),
+              headers: headers)
+          .then((value) => print('${value.body}'))
+          .timeout(const Duration(seconds: 60), onTimeout: () {
+        log('Đã hết thời gian kết nối');
+        throw TimeoutException('Đã hết thời gian kết nối');
+      }).onError((error, stackTrace) {
+        HAppUtils.showSnackBarError('Lỗi', error.toString());
+        throw Exception(error);
+      });
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  static sendNotificationToUserByAllReject(OrderModel order) async {
+    try {
+      const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      final data = {
+        "to": order.orderUser.cloudMessagingToken,
+        "notification": {
+          "title": 'Từ chối',
+          "body":
+              'Đơn hàng của bạn bị từ chối bởi các cửa hàng, xin hãy vui lòng đặt đơn mới tại các cửa hàng khác hoặc đặt lại sau.',
+        },
+        "data": {"reject": 'Bị từ chối tất cả', 'order': order.toJson()}
       };
 
       print(order.orderUserAddress.toString());

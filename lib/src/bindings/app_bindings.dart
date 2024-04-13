@@ -7,6 +7,9 @@ import 'package:on_demand_grocery_store/src/features/authentication/controller/v
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_name_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
+import 'package:on_demand_grocery_store/src/repositories/delivery_person_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/user_repository.dart';
 
 class HAppBinding extends Bindings {
   @override
@@ -21,5 +24,9 @@ class HAppBinding extends Bindings {
     // Get.lazyPut(() => HomeController(), fenix: true);
     Get.lazyPut(() => LoginController(), fenix: true);
     // Get.lazyPut(() => ProductController(), fenix: true);
+
+    Get.lazyPut(() => UserRepository(), fenix: true);
+    Get.lazyPut(() => StoreRepository(), fenix: true);
+    Get.lazyPut(() => DeliveryPersonRepository(), fenix: true);
   }
 }

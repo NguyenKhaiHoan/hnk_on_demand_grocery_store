@@ -74,7 +74,7 @@ class HLocationService {
     }
   }
 
-  static Future<void> getNearbyDeliveryPersons() async {
+  static Future<void> getNearbyDeliveryPersons(double km) async {
     final deliveryPersonController = DeliveryPersonController.instance;
     final addressRepository = Get.put(AddressRepository());
     deliveryPersonController.allNearbydeliveryPersonsId.clear();
@@ -82,7 +82,7 @@ class HLocationService {
     Geofire.initialize('DeliveryPersons');
     try {
       Geofire.queryAtLocation(currentPosition.first.latitude,
-              currentPosition.first.longitude, 3)!
+              currentPosition.first.longitude, km)!
           .listen((map) async {
         print(map);
         if (map != null) {

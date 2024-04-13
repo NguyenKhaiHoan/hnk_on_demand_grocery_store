@@ -10,13 +10,18 @@ import 'package:intl/intl.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/user_address_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/category_controller.dart';
+import 'package:on_demand_grocery_store/src/features/sell/controllers/delivery_person_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/order_controller.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/delivery_person_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/order_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/product_in_cart_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/store_note_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/user_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/chat_order.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/generate_qr_widget.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/services/location_service.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
@@ -28,12 +33,9 @@ class OrderDetailScreen extends StatelessWidget {
   });
 
   final orderController = Get.put(OrderController());
+  final deliveryPersonController = Get.put(DeliveryPersonController());
 
   final String orderId = Get.arguments['orderId'];
-  // final StoreOrderModel storeOrder = Get.arguments['storeOrder'];
-  // final List<ProductInCartModel> products = Get.arguments['productOrders'];
-  // final int price = Get.arguments['totalPrice'];
-  // final int numberOfCart = Get.arguments['numberOfCart'];
   final int index = Get.arguments['index'];
 
   @override
@@ -42,21 +44,22 @@ class OrderDetailScreen extends StatelessWidget {
       stream: FirebaseDatabase.instance.ref().child('Orders/$orderId').onValue,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child:
-                CircularProgressIndicator(color: HAppColor.hBluePrimaryColor),
-          );
-        }
-        if (snapshot.hasError) {
-          return const Center(
-            child: Text('Lỗi, không thể tải dữ liệu'),
+          return const Scaffold(
+            body: Center(
+              child:
+                  CircularProgressIndicator(color: HAppColor.hBluePrimaryColor),
+            ),
           );
         }
 
+        if (snapshot.hasError) {
+          Get.back();
+          return const SizedBox();
+        }
+
         if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-          return const Center(
-            child: Text('Lỗi, không có dữ liệu để hiển thị'),
-          );
+          Get.back();
+          return const SizedBox();
         }
 
         OrderModel order = OrderModel.fromJson(
@@ -65,6 +68,10 @@ class OrderDetailScreen extends StatelessWidget {
 
         orderController.acceptOrder.value =
             order.storeOrders[index].acceptByStore;
+
+        if (order.deliveryPerson == null) {
+          orderController.sendNotificationToDeliveryPerson(order);
+        }
 
         return Scaffold(
             appBar: AppBar(
@@ -101,10 +108,34 @@ class OrderDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Đơn hàng #${(order.oderId).substring(0, 15)}...',
-                    style: HAppStyle.heading4Style,
-                  ),
+                  Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                    Text(
+                      'Đơn hàng #${(order.oderId).substring(0, 15)}...',
+                      style: HAppStyle.heading4Style,
+                    ),
+                    gapW6,
+                    GestureDetector(
+                      onTap: () => showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                                title: const Text('Mã QR'),
+                                content: GenerateCodeWidget(
+                                    qrData: order.oderId
+                                        .substring(orderId.length - 4)),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Get.back(),
+                                    child: Text(
+                                      'Thoát',
+                                      style: HAppStyle.label4Bold.copyWith(
+                                          color: HAppColor.hBluePrimaryColor),
+                                    ),
+                                  ),
+                                ],
+                              )),
+                      child: const Icon(EvaIcons.eye),
+                    )
+                  ]),
                   gapH6,
                   Text(
                     'Dưới đây là chi tiết về đơn hàng',
@@ -127,6 +158,7 @@ class OrderDetailScreen extends StatelessWidget {
                                 AuthenticationRepository.instance.authUser!.uid)
                             .first
                             .note,
+                        isUser: true,
                       ),
                       gapH6,
                       Divider(
@@ -137,10 +169,81 @@ class OrderDetailScreen extends StatelessWidget {
                         title: 'Địa chỉ khách hàng',
                         down: true,
                         userAddress: order.orderUserAddress,
+                        order: order,
+                        anotherId: order.orderUserId,
+                        isUser: true,
                       ),
                     ]),
                   ),
                   gapH12,
+                  order.deliveryPerson != null
+                      ? Container(
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                              color: HAppColor.hWhiteColor,
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              order.deliveryPerson!.image! != ''
+                                  ? ImageNetwork(
+                                      image: order.deliveryPerson!.image!,
+                                      height: 60,
+                                      width: 60,
+                                      borderRadius: BorderRadius.circular(100),
+                                      onLoading:
+                                          const CustomShimmerWidget.circular(
+                                              width: 60, height: 60),
+                                    )
+                                  : Image.asset(
+                                      'assets/logos/logo.png',
+                                      height: 60,
+                                      width: 60,
+                                    ),
+                              gapW10,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    order.deliveryPerson!.name!,
+                                    style: HAppStyle.heading5Style,
+                                  ),
+                                  gapH4,
+                                  Text(
+                                    order.deliveryPerson!.phoneNumber!,
+                                    style: HAppStyle.paragraph2Regular.copyWith(
+                                        color: HAppColor.hGreyColorShade600),
+                                  )
+                                ],
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {},
+                                child: const Icon(
+                                  EvaIcons.phoneOutline,
+                                  size: 18,
+                                ),
+                              ),
+                              gapW10,
+                              GestureDetector(
+                                onTap: () => Get.to(
+                                    const ChatOrderRealtimeScreen(),
+                                    arguments: {
+                                      'orderId': order.oderId,
+                                      'anotherId': order.deliveryPerson!.id,
+                                      'otherId': AuthenticationRepository
+                                          .instance.authUser!.uid
+                                    }),
+                                child: const Icon(
+                                  EvaIcons.messageSquareOutline,
+                                  size: 18,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(),
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -152,6 +255,7 @@ class OrderDetailScreen extends StatelessWidget {
                         title2: DateFormat('EEEE, d-M-y', 'vi')
                             .format(order.orderDate!),
                         down: false,
+                        isUser: true,
                       ),
                       gapH6,
                       Divider(
@@ -166,6 +270,7 @@ class OrderDetailScreen extends StatelessWidget {
                                     ? 'Từ chối'
                                     : 'Đã xác nhận',
                             down: false,
+                            isUser: true,
                           )),
                       gapH6,
                       Divider(
@@ -174,16 +279,30 @@ class OrderDetailScreen extends StatelessWidget {
                       gapH6,
                       SectionWidget(
                         title: 'Tổng thu',
-                        title2: HAppUtils.vietNamCurrencyFormatting(order
-                            .orderProducts
-                            .where((element) =>
-                                element.storeId ==
-                                AuthenticationRepository.instance.authUser!.uid)
-                            .fold(
-                                0,
-                                (previous, current) =>
-                                    previous + current.price!)),
+                        title2: order.paymentStatus == 'Đã thanh toán'
+                            ? '0₫'
+                            : order.voucher != null
+                                ? HAppUtils.vietNamCurrencyFormatting(
+                                    order.orderProducts.where((element) => element.storeId == StoreController.instance.user.value.id).map((product) => product.price! * product.quantity).fold(
+                                            0,
+                                            (previous, current) =>
+                                                previous + current) -
+                                        (order.voucher!.storeId != ''
+                                            ? (order.voucher!.storeId ==
+                                                    StoreController
+                                                        .instance.user.value.id
+                                                ? order.discount
+                                                : 0)
+                                            : 0))
+                                : HAppUtils.vietNamCurrencyFormatting(order
+                                    .orderProducts
+                                    .where((element) =>
+                                        element.storeId ==
+                                        StoreController.instance.user.value.id)
+                                    .map((product) => product.price! * product.quantity)
+                                    .fold(0, (previous, current) => previous + current)),
                         down: false,
+                        isUser: true,
                       ),
                     ]),
                   ),
@@ -258,8 +377,16 @@ class OrderDetailScreen extends StatelessWidget {
                                 ])),
                           ),
                           TextButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 orderController.acceptOrder.value = -1;
+                                var ref = FirebaseDatabase.instance
+                                    .ref("Orders/$orderId/StoreOrders/$index/");
+                                await ref.update({
+                                  "AcceptByStore": -1,
+                                });
+                                order.storeOrders[index].acceptByStore = -1;
+                                orderController.sendNotificationToUser(order);
+                                Get.back();
                               },
                               child: Text(
                                 'Từ chối',
@@ -279,8 +406,6 @@ class OrderDetailScreen extends StatelessWidget {
                                 "AcceptByStore": 1,
                               });
                               order.storeOrders[index].acceptByStore = 1;
-                              orderController
-                                  .sendNotificationToDeliveryPerson(order);
                             },
                             style: ElevatedButton.styleFrom(
                               maximumSize: Size(HAppSize.deviceWidth * 0.5, 50),
@@ -311,12 +436,20 @@ class SectionWidget extends StatelessWidget {
     this.title2,
     required this.down,
     this.userAddress,
+    this.order,
+    this.anotherId,
+    this.deliveryPerson,
+    required this.isUser,
   });
 
   final String? title2;
   final String title;
   final bool down;
   final UserAddressModel? userAddress;
+  final DeliveryPersonModel? deliveryPerson;
+  final String? anotherId;
+  final OrderModel? order;
+  final bool isUser;
 
   @override
   Widget build(BuildContext context) {
@@ -330,28 +463,98 @@ class SectionWidget extends StatelessWidget {
                     .copyWith(color: HAppColor.hGreyColorShade600),
               ),
               gapH6,
-              userAddress != null
-                  ? Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userAddress!.name,
-                              style: HAppStyle.heading5Style,
-                            ),
-                            Text(userAddress!.phoneNumber),
-                            Text(userAddress!.toString())
-                          ]),
-                    )
-                  : Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        title2! == '' ? 'Không có ghi chú' : title2!,
-                        style: HAppStyle.paragraph2Regular,
-                        textAlign: TextAlign.right,
-                      ),
-                    )
+              isUser
+                  ? userAddress != null
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  userAddress!.name,
+                                  style: HAppStyle.heading5Style,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(userAddress!.phoneNumber),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () {},
+                                      child: const Icon(
+                                        EvaIcons.phoneOutline,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    gapW10,
+                                    GestureDetector(
+                                      onTap: () => Get.to(
+                                          const ChatOrderRealtimeScreen(),
+                                          arguments: {
+                                            'orderId': order!.oderId,
+                                            'anotherId': order!.orderUserId,
+                                            'otherId': AuthenticationRepository
+                                                .instance.authUser!.uid
+                                          }),
+                                      child: const Icon(
+                                        EvaIcons.messageSquareOutline,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(userAddress!.toString())
+                              ]),
+                        )
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            title2! == '' ? 'Không có ghi chú' : title2!,
+                            style: HAppStyle.paragraph2Regular,
+                            textAlign: TextAlign.right,
+                          ),
+                        )
+                  : order!.deliveryPerson != null
+                      ? Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  deliveryPerson!.name!,
+                                  style: HAppStyle.heading5Style,
+                                ),
+                                Row(
+                                  children: [
+                                    Text(deliveryPerson!.phoneNumber!),
+                                    const Spacer(),
+                                    GestureDetector(
+                                      onTap: () {},
+                                      child: const Icon(
+                                        EvaIcons.phoneOutline,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    gapW10,
+                                    GestureDetector(
+                                      onTap: () => Get.to(
+                                          const ChatOrderRealtimeScreen(),
+                                          arguments: {
+                                            'orderId': order!.oderId,
+                                            'anotherId':
+                                                order!.deliveryPerson!.id,
+                                            'otherId': AuthenticationRepository
+                                                .instance.authUser!.uid
+                                          }),
+                                      child: const Icon(
+                                        EvaIcons.messageSquareOutline,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]),
+                        )
+                      : Container()
             ],
           )
         : Row(

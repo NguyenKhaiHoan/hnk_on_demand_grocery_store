@@ -103,6 +103,7 @@ dependencies:
   flutter_chat_ui: ^1.6.12
   flutter_chat_types: ^3.6.2
   uuid: ^4.3.3
+  pretty_qr_code: ^3.3.0
 
 dev_dependencies:
   flutter_test:

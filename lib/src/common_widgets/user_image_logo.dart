@@ -20,36 +20,24 @@ class UserImageLogoWidget extends StatelessWidget {
     return storeController.isLoading.value ||
             storeController.isUploadImageLoading.value
         ? CustomShimmerWidget.circular(width: size, height: size)
-        : storeController.user.value.storeImage == ''
-            ? GestureDetector(
-                onTap: () {},
-                child: Container(
-                  color: HAppColor.hBackgroundColor,
-                  width: size,
-                  height: size,
-                  child: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/logos/logo.png'),
-                  ),
-                ))
-            : ImageNetwork(
-                image: storeController.user.value.storeImage,
-                height: size,
-                width: size,
-                duration: 500,
-                curve: Curves.easeIn,
-                onPointer: true,
-                debugPrint: false,
-                fullScreen: false,
-                fitAndroidIos: BoxFit.cover,
-                fitWeb: BoxFitWeb.cover,
-                borderRadius: BorderRadius.circular(100),
-                onLoading:
-                    CustomShimmerWidget.circular(width: size, height: size),
-                onError: const Icon(
-                  Icons.error,
-                  color: Colors.red,
-                ),
-                onTap: () => null,
-              );
+        : ImageNetwork(
+            image: storeController.user.value.storeImage,
+            height: size,
+            width: size,
+            duration: 500,
+            curve: Curves.easeIn,
+            onPointer: true,
+            debugPrint: false,
+            fullScreen: false,
+            fitAndroidIos: BoxFit.cover,
+            fitWeb: BoxFitWeb.cover,
+            borderRadius: BorderRadius.circular(100),
+            onLoading: CustomShimmerWidget.circular(width: size, height: size),
+            onError: const Icon(
+              Icons.error,
+              color: Colors.red,
+            ),
+            onTap: () => null,
+          );
   }
 }

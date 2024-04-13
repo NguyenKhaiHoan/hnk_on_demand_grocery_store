@@ -6,6 +6,9 @@ import 'package:on_demand_grocery_store/src/common_widgets/user_image_logo.dart'
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/chat/all_chat_screen.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/voucher/add_voucher_screen.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/voucher/all_voucher_screen.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/routes/app_pages.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
@@ -69,8 +72,9 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        print(storeController.user.value.name.toString());
-                        storeController.fetchStoreRecord();
+                        // print(storeController.user.value.name.toString());
+                        // storeController.fetchStoreRecord();
+                        Get.to(const AllVoucherScreen());
                       },
                       child: const MenuItem(
                         icon: Icon(
@@ -86,6 +90,17 @@ class _MenuScreenState extends State<MenuScreen> {
                             color: HAppColor.hWhiteColor,
                             EvaIcons.shoppingBagOutline),
                         title: 'Đơn hàng',
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.to(AllChatScreen());
+                      },
+                      child: const MenuItem(
+                        icon: Icon(
+                            color: HAppColor.hWhiteColor,
+                            EvaIcons.messageSquareOutline),
+                        title: 'Tin nhắn',
                       ),
                     ),
                     const MenuItem(
