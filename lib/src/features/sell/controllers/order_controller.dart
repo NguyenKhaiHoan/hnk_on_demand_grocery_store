@@ -8,6 +8,7 @@ import 'package:on_demand_grocery_store/src/features/sell/controllers/delivery_p
 import 'package:on_demand_grocery_store/src/features/sell/models/category_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/order_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/product_in_cart_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/product_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/store_note_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
 import 'package:on_demand_grocery_store/src/repositories/category_repository.dart';
@@ -166,5 +167,105 @@ class OrderController extends GetxController {
     allReject.value = false;
     allAccept.value = false;
     // isFirstTimeRequest.value = true;
+  }
+
+  ProductInCartModel convertToCartProduct(ProductModel product, int quantity) {
+    final price = product.salePersent != 0 ? product.priceSale : product.price;
+    return ProductInCartModel(
+        productId: product.id,
+        productName: product.name,
+        image: product.image,
+        price: price,
+        quantity: quantity,
+        storeId: product.storeId,
+        storeName: '',
+        storeAddress: '',
+        unit: product.unit);
+  }
+
+  ProductModel convertToProductModel(ProductInCartModel product) {
+    return ProductModel(
+        id: product.productId,
+        name: product.productName!,
+        image: product.image!,
+        categoryId: '',
+        description: '',
+        status: '',
+        price: product.price!,
+        salePersent: 0,
+        priceSale: product.price!,
+        unit: product.unit!,
+        countBuyed: 0,
+        rating: 0,
+        origin: '',
+        storeId: product.storeId,
+        uploadTime: DateTime.now());
+  }
+
+  void replaceProductInCart(
+      {required String productId,
+      required ProductInCartModel newReplacementProduct,
+      required OrderModel order}) {
+    HAppUtils.loadingOverlays();
+    var list = order.orderProducts;
+    for (int i = 0; i < list.length; i++) {
+      if (list[i].productId == productId) {
+        print('Tìm thấy sản phẩm: ${list[i].productId}');
+        print('Sản phẩm thay thế: ${list[i].replacementProduct!.id}');
+
+        order.replacedProducts ??= <ProductInCartModel>[];
+        if (!order.replacedProducts!.contains(list[i])) {
+          order.replacedProducts!.add(list[i]);
+        }
+
+        var temp = list[i];
+        list[i] = newReplacementProduct;
+        list[i].replacementProduct = convertToProductModel(temp);
+
+        print('Sản phẩm mới: ${list[i].productId}');
+        print('Sản phẩm thay thế: ${list[i].replacementProduct!.id}');
+        break;
+      }
+    }
+    var newTotalPrice = calculateCart(order);
+    FirebaseDatabase.instance.ref().child('Orders/${order.oderId}').update({
+      'OrderProducts': list.map((e) => e.toJson()).toList(),
+      'ReplacedProducts':
+          order.replacedProducts!.map((e) => e.toJson()).toList(),
+      'Price': newTotalPrice
+    }).then((value) {
+      HAppUtils.stopLoading();
+      HAppUtils.showSnackBarSuccess(
+          'Thay thế thành công', 'Bạn đã thay thế sản phẩm thành công');
+    }).onError((error, stackTrace) {
+      HAppUtils.stopLoading();
+      HAppUtils.showSnackBarSuccess(
+          'Lỗi', 'Thay thế sản phẩm không thành công');
+    });
+  }
+
+  int calculateCart(OrderModel order) {
+    int totalPrice = 0;
+    for (var cartProduct in order.orderProducts) {
+      totalPrice += cartProduct.price! * cartProduct.quantity;
+    }
+    return totalPrice;
+  }
+
+  int totalDifference(List<ProductInCartModel> products) {
+    int difference = 0;
+    for (var product in products) {
+      difference += (product.priceDifference ?? 0) * product.quantity;
+    }
+    return difference;
+  }
+
+  int totalCartValue(List<ProductInCartModel> products) {
+    int total = 0;
+    for (var product in products) {
+      total += (product.replacementProduct?.priceSale ?? product.price!) *
+          product.quantity;
+    }
+    return total;
   }
 }

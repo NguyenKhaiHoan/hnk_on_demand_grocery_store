@@ -277,33 +277,37 @@ class OrderDetailScreen extends StatelessWidget {
                         color: HAppColor.hGreyColorShade300,
                       ),
                       gapH6,
-                      SectionWidget(
-                        title: 'Tổng thu',
-                        title2: order.paymentStatus == 'Đã thanh toán'
-                            ? '0₫'
-                            : order.voucher != null
-                                ? HAppUtils.vietNamCurrencyFormatting(
-                                    order.orderProducts.where((element) => element.storeId == StoreController.instance.user.value.id).map((product) => product.price! * product.quantity).fold(
-                                            0,
-                                            (previous, current) =>
-                                                previous + current) -
-                                        (order.voucher!.storeId != ''
-                                            ? (order.voucher!.storeId ==
-                                                    StoreController
-                                                        .instance.user.value.id
-                                                ? order.discount
-                                                : 0)
-                                            : 0))
-                                : HAppUtils.vietNamCurrencyFormatting(order
-                                    .orderProducts
-                                    .where((element) =>
-                                        element.storeId ==
-                                        StoreController.instance.user.value.id)
-                                    .map((product) => product.price! * product.quantity)
-                                    .fold(0, (previous, current) => previous + current)),
-                        down: false,
-                        isUser: true,
-                      ),
+                      GestureDetector(
+                        onTap: () {
+                          print('Vào đây');
+                        },
+                        child: SectionWidget(
+                          title: 'Tổng thu',
+                          title2: order.paymentStatus == 'Đã thanh toán'
+                              ? '0₫'
+                              : order.voucher != null
+                                  ? HAppUtils.vietNamCurrencyFormatting(
+                                      order.orderProducts.where((element) => element.storeId == StoreController.instance.user.value.id).map((product) => product.price! * product.quantity).fold(
+                                              0,
+                                              (previous, current) =>
+                                                  previous + current) -
+                                          (order.voucher!.storeId != ''
+                                              ? (order.voucher!.storeId ==
+                                                      StoreController.instance
+                                                          .user.value.id
+                                                  ? order.discount
+                                                  : 0)
+                                              : 0))
+                                  : HAppUtils.vietNamCurrencyFormatting(order.orderProducts
+                                      .where((element) =>
+                                          element.storeId ==
+                                          StoreController.instance.user.value.id)
+                                      .map((product) => product.price! * product.quantity)
+                                      .fold(0, (previous, current) => previous + current)),
+                          down: false,
+                          isUser: true,
+                        ),
+                      )
                     ]),
                   ),
                   gapH12,
@@ -317,13 +321,143 @@ class OrderDetailScreen extends StatelessWidget {
                         .toList()
                         .length,
                     itemBuilder: (context, index) {
+                      var product = order.orderProducts
+                          .where((element) =>
+                              element.storeId ==
+                              AuthenticationRepository.instance.authUser!.uid)
+                          .toList()[index];
                       return ProductItemHorizalWidget(
-                          model: order.orderProducts
-                              .where((element) =>
-                                  element.storeId ==
-                                  AuthenticationRepository
-                                      .instance.authUser!.uid)
-                              .toList()[index]);
+                        model: product,
+                        onTap: () {
+                          print('Ấn vào đây');
+                          if (product.replacementProduct != null) {
+                            showModalBottomSheet(
+                                context: context,
+                                useRootNavigator: true,
+                                isScrollControlled: true,
+                                builder: (context) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: hAppDefaultPadding,
+                                        horizontal: hAppDefaultPadding),
+                                    decoration: const BoxDecoration(
+                                        color: HAppColor.hBackgroundColor,
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(10),
+                                            topRight: Radius.circular(10))),
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                const Text(
+                                                  "Thay thế sản phẩm",
+                                                  style:
+                                                      HAppStyle.heading4Style,
+                                                ),
+                                                GestureDetector(
+                                                    onTap: () {
+                                                      Get.back();
+                                                    },
+                                                    child: const Icon(
+                                                        EvaIcons.close))
+                                              ],
+                                            ),
+                                            gapH6,
+                                            Divider(
+                                              color:
+                                                  HAppColor.hGreyColorShade300,
+                                            ),
+                                            gapH12,
+                                            ProductItemHorizalWidget(
+                                              model: orderController
+                                                  .convertToCartProduct(
+                                                      product
+                                                          .replacementProduct!,
+                                                      product.quantity),
+                                              onTap: () {},
+                                            ),
+                                            gapH12,
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: OutlinedButton(
+                                                      onPressed: () {
+                                                        Get.back();
+                                                      },
+                                                      style: OutlinedButton.styleFrom(
+                                                          maximumSize: Size(
+                                                              HAppSize.deviceWidth *
+                                                                  0.5,
+                                                              50),
+                                                          foregroundColor:
+                                                              HAppColor
+                                                                  .hRedColor,
+                                                          side: const BorderSide(
+                                                              color: HAppColor
+                                                                  .hRedColor)),
+                                                      child: Text(
+                                                        "Bỏ",
+                                                        style: HAppStyle
+                                                            .label2Bold
+                                                            .copyWith(
+                                                                color: HAppColor
+                                                                    .hRedColor),
+                                                      )),
+                                                ),
+                                                gapW10,
+                                                Expanded(
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      orderController.replaceProductInCart(
+                                                          productId:
+                                                              product.productId,
+                                                          newReplacementProduct:
+                                                              orderController.convertToCartProduct(
+                                                                  product
+                                                                      .replacementProduct!,
+                                                                  product
+                                                                      .quantity),
+                                                          order: order);
+                                                      Get.back();
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      maximumSize: Size(
+                                                          HAppSize.deviceWidth *
+                                                              0.5,
+                                                          50),
+                                                      backgroundColor: HAppColor
+                                                          .hBluePrimaryColor,
+                                                    ),
+                                                    child: Text(
+                                                      "Thay thế",
+                                                      style: HAppStyle
+                                                          .label2Bold
+                                                          .copyWith(
+                                                              color: HAppColor
+                                                                  .hWhiteColor),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                            gapH12,
+                                          ]),
+                                    ),
+                                  );
+                                });
+                          }
+                        },
+                      );
                     },
                     separatorBuilder: (context, index) => gapH12,
                   ),
@@ -584,15 +718,18 @@ class SectionWidget extends StatelessWidget {
 }
 
 class ProductItemHorizalWidget extends StatelessWidget {
-  ProductItemHorizalWidget({
+  const ProductItemHorizalWidget({
     super.key,
     required this.model,
+    required this.onTap,
   });
   final ProductInCartModel model;
+  final Function() onTap;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: onTap,
       child: Container(
         height: 100,
         padding: const EdgeInsets.all(10),
