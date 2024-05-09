@@ -15,14 +15,17 @@ import 'package:on_demand_grocery_store/src/features/personalization/models/user
 import 'package:on_demand_grocery_store/src/features/sell/controllers/category_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/delivery_person_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/controllers/order_controller.dart';
+import 'package:on_demand_grocery_store/src/features/sell/controllers/product_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/delivery_person_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/order_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/product_in_cart_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/product_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/store_note_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/user_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/chat_order.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/generate_qr_widget.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/product_repository.dart';
 import 'package:on_demand_grocery_store/src/services/location_service.dart';
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
@@ -37,6 +40,7 @@ class OrderDetailScreen extends StatelessWidget {
 
   final String orderId = Get.arguments['orderId'];
   final int index = Get.arguments['index'];
+  var isSend = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +57,16 @@ class OrderDetailScreen extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
-          Get.back();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.back();
+          });
           return const SizedBox();
         }
 
         if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-          Get.back();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Get.back();
+          });
           return const SizedBox();
         }
 
@@ -69,7 +77,16 @@ class OrderDetailScreen extends StatelessWidget {
         orderController.acceptOrder.value =
             order.storeOrders[index].acceptByStore;
 
-        if (order.deliveryPerson == null) {
+        if (order.deliveryPerson == null &&
+            !isSend.value &&
+            order.storeOrders
+                    .where((element) =>
+                        element.storeId ==
+                        StoreController.instance.user.value.id)
+                    .first
+                    .acceptByStore ==
+                1) {
+          isSend.value = true;
           orderController.sendNotificationToDeliveryPerson(order);
         }
 
@@ -277,36 +294,28 @@ class OrderDetailScreen extends StatelessWidget {
                         color: HAppColor.hGreyColorShade300,
                       ),
                       gapH6,
-                      GestureDetector(
-                        onTap: () {
-                          print('Vào đây');
-                        },
-                        child: SectionWidget(
-                          title: 'Tổng thu',
-                          title2: order.paymentStatus == 'Đã thanh toán'
-                              ? '0₫'
-                              : order.voucher != null
-                                  ? HAppUtils.vietNamCurrencyFormatting(
-                                      order.orderProducts.where((element) => element.storeId == StoreController.instance.user.value.id).map((product) => product.price! * product.quantity).fold(
-                                              0,
-                                              (previous, current) =>
-                                                  previous + current) -
-                                          (order.voucher!.storeId != ''
-                                              ? (order.voucher!.storeId ==
-                                                      StoreController.instance
-                                                          .user.value.id
-                                                  ? order.discount
-                                                  : 0)
-                                              : 0))
-                                  : HAppUtils.vietNamCurrencyFormatting(order.orderProducts
-                                      .where((element) =>
-                                          element.storeId ==
-                                          StoreController.instance.user.value.id)
-                                      .map((product) => product.price! * product.quantity)
-                                      .fold(0, (previous, current) => previous + current)),
-                          down: false,
-                          isUser: true,
-                        ),
+                      SectionWidget(
+                        title: 'Tổng thu',
+                        title2: order.voucher != null
+                            ? HAppUtils.vietNamCurrencyFormatting(
+                                order.orderProducts.where((element) => element.storeId == StoreController.instance.user.value.id).map((product) => product.price! * product.quantity).fold(
+                                        0,
+                                        (previous, current) =>
+                                            previous + current) -
+                                    (order.voucher!.storeId != ''
+                                        ? (order.voucher!.storeId ==
+                                                StoreController
+                                                    .instance.user.value.id
+                                            ? order.discount
+                                            : 0)
+                                        : 0))
+                            : HAppUtils.vietNamCurrencyFormatting(order.orderProducts
+                                .where((element) =>
+                                    element.storeId == StoreController.instance.user.value.id)
+                                .map((product) => product.price! * product.quantity)
+                                .fold(0, (previous, current) => previous + current)),
+                        down: false,
+                        isUser: true,
                       )
                     ]),
                   ),
@@ -326,11 +335,17 @@ class OrderDetailScreen extends StatelessWidget {
                               element.storeId ==
                               AuthenticationRepository.instance.authUser!.uid)
                           .toList()[index];
-                      return ProductItemHorizalWidget(
+                      return ProductItemHorizalOrderWidget(
                         model: product,
                         onTap: () {
                           print('Ấn vào đây');
-                          if (product.replacementProduct != null) {
+
+                          if (product.replacementProduct != null &&
+                              (order.replacedProducts == null ||
+                                  (order.replacedProducts != null &&
+                                      !order.replacedProducts!.any((element) =>
+                                          element.replacementProduct!.id ==
+                                          product.productId)))) {
                             showModalBottomSheet(
                                 context: context,
                                 useRootNavigator: true,
@@ -377,7 +392,7 @@ class OrderDetailScreen extends StatelessWidget {
                                                   HAppColor.hGreyColorShade300,
                                             ),
                                             gapH12,
-                                            ProductItemHorizalWidget(
+                                            ProductItemHorizalOrderWidget(
                                               model: orderController
                                                   .convertToCartProduct(
                                                       product
@@ -510,25 +525,30 @@ class OrderDetailScreen extends StatelessWidget {
                                           color: HAppColor.hDarkColor))
                                 ])),
                           ),
-                          TextButton(
-                              onPressed: () async {
-                                orderController.acceptOrder.value = -1;
-                                var ref = FirebaseDatabase.instance
-                                    .ref("Orders/$orderId/StoreOrders/$index/");
-                                await ref.update({
-                                  "AcceptByStore": -1,
-                                });
-                                order.storeOrders[index].acceptByStore = -1;
-                                orderController.sendNotificationToUser(order);
-                                Get.back();
-                              },
-                              child: Text(
-                                'Từ chối',
-                                style: HAppStyle.paragraph2Regular.copyWith(
-                                  color: HAppColor.hRedColor,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              )),
+                          order.deliveryPerson != null
+                              ? Container()
+                              : TextButton(
+                                  onPressed: () async {
+                                    orderController.acceptOrder.value = -1;
+                                    var ref = FirebaseDatabase.instance.ref(
+                                        "Orders/$orderId/StoreOrders/$index/");
+                                    await ref.update({
+                                      "AcceptByStore": -1,
+                                    }).then((value) async {
+                                      order.storeOrders[index].acceptByStore =
+                                          -1;
+                                      await orderController
+                                          .sendNotificationToUser(order);
+                                    });
+                                    Get.back();
+                                  },
+                                  child: Text(
+                                    'Từ chối',
+                                    style: HAppStyle.paragraph2Regular.copyWith(
+                                      color: HAppColor.hRedColor,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  )),
                           gapW10,
                           Expanded(
                               child: ElevatedButton(
@@ -538,8 +558,11 @@ class OrderDetailScreen extends StatelessWidget {
                                   .ref("Orders/$orderId/StoreOrders/$index/");
                               await ref.update({
                                 "AcceptByStore": 1,
+                              }).then((value) async {
+                                order.storeOrders[index].acceptByStore = 1;
+                                await orderController
+                                    .sendNotificationToDeliveryPerson(order);
                               });
-                              order.storeOrders[index].acceptByStore = 1;
                             },
                             style: ElevatedButton.styleFrom(
                               maximumSize: Size(HAppSize.deviceWidth * 0.5, 50),
@@ -717,8 +740,8 @@ class SectionWidget extends StatelessWidget {
   }
 }
 
-class ProductItemHorizalWidget extends StatelessWidget {
-  const ProductItemHorizalWidget({
+class ProductItemHorizalOrderWidget extends StatelessWidget {
+  const ProductItemHorizalOrderWidget({
     super.key,
     required this.model,
     required this.onTap,
@@ -794,6 +817,251 @@ class ProductItemHorizalWidget extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ProductItemHorizalWidget extends StatefulWidget {
+  ProductItemHorizalWidget({
+    super.key,
+    required this.model,
+  });
+  final ProductModel model;
+
+  @override
+  State<ProductItemHorizalWidget> createState() =>
+      _ProductItemHorizalWidgetState();
+}
+
+class _ProductItemHorizalWidgetState extends State<ProductItemHorizalWidget> {
+  final productController = ProductController.instance;
+
+  var status = true.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    status.value = widget.model.status == 'Còn hàng' ? true : false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Container(
+        height: 110,
+        padding: const EdgeInsets.only(left: 10, top: 10),
+        decoration: BoxDecoration(
+            color: HAppColor.hWhiteColor,
+            borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          children: [
+            Stack(children: [
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      image: DecorationImage(
+                          image: NetworkImage(widget.model.image),
+                          fit: BoxFit.fill)),
+                ),
+              ),
+              widget.model.salePersent != 0
+                  ? Positioned(
+                      bottom: 10,
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.fromLTRB(5, 3, 5, 3),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: HAppColor.hOrangeColor),
+                        child: Text('${widget.model.salePersent}%',
+                            style: HAppStyle.label4Bold
+                                .copyWith(color: HAppColor.hWhiteColor)),
+                      ),
+                    )
+                  : Container(),
+              Positioned(
+                top: 0,
+                left: 0,
+                child: Obx(() => Switch(
+                    trackOutlineColor: MaterialStateProperty.resolveWith(
+                      (final Set<MaterialState> states) {
+                        if (states.contains(MaterialState.selected)) {
+                          return null;
+                        }
+                        return HAppColor.hGreyColorShade300;
+                      },
+                    ),
+                    activeColor: HAppColor.hBluePrimaryColor,
+                    activeTrackColor: HAppColor.hBlueSecondaryColor,
+                    inactiveThumbColor: HAppColor.hWhiteColor,
+                    inactiveTrackColor: HAppColor.hGreyColorShade300,
+                    value: status.value,
+                    onChanged: (changed) async {
+                      final check = await productController.checkStatus(
+                          status.value, widget.model.id);
+                      if (check) {
+                        status.value = changed;
+                      }
+                    })),
+              )
+            ]),
+            gapW10,
+            Expanded(
+                child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 10, top: 10),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                                CategoryController
+                                    .instance
+                                    .listOfCategory[
+                                        int.parse(widget.model.categoryId)]
+                                    .name,
+                                style: HAppStyle.paragraph3Regular.copyWith(
+                                    color: HAppColor.hGreyColorShade600)),
+                            const Spacer(),
+                            Text(widget.model.unit,
+                                style: HAppStyle.paragraph3Regular.copyWith(
+                                    color: HAppColor.hGreyColorShade600)),
+                          ],
+                        ),
+                        gapH8,
+                        Text(
+                          widget.model.name,
+                          style: HAppStyle.label2Bold.copyWith(
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          maxLines: 1,
+                        ),
+                        gapH8,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  EvaIcons.star,
+                                  color: HAppColor.hOrangeColor,
+                                  size: 16,
+                                ),
+                                gapW2,
+                                Text.rich(
+                                  TextSpan(
+                                    style: HAppStyle.paragraph2Bold,
+                                    text:
+                                        widget.model.rating.toStringAsFixed(1),
+                                    children: [
+                                      TextSpan(
+                                        text: '/5',
+                                        style: HAppStyle.paragraph3Regular
+                                            .copyWith(
+                                                color: HAppColor
+                                                    .hGreyColorShade600),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Text.rich(
+                              TextSpan(
+                                style: HAppStyle.paragraph2Bold,
+                                text: '${widget.model.countBuyed} ',
+                                children: [
+                                  TextSpan(
+                                    text: 'Đã bán',
+                                    style: HAppStyle.paragraph3Regular.copyWith(
+                                        color: HAppColor.hGreyColorShade600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ]),
+                ),
+                const Spacer(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      height: 45,
+                      child: Center(
+                        child: widget.model.salePersent == 0
+                            ? Text(
+                                HAppUtils.vietNamCurrencyFormatting(
+                                    widget.model.price),
+                                style: HAppStyle.label2Bold.copyWith(
+                                    color: HAppColor.hBluePrimaryColor),
+                              )
+                            : widget.model.status == "Còn hàng"
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          HAppUtils.vietNamCurrencyFormatting(
+                                              widget.model.price),
+                                          style: HAppStyle.paragraph3Bold
+                                              .copyWith(
+                                                  color: HAppColor.hGreyColor,
+                                                  decoration: TextDecoration
+                                                      .lineThrough)),
+                                      Text(
+                                          HAppUtils.vietNamCurrencyFormatting(
+                                              widget.model.priceSale),
+                                          style: HAppStyle.label2Bold.copyWith(
+                                              color: HAppColor.hOrangeColor,
+                                              decoration: TextDecoration.none))
+                                    ],
+                                  )
+                                : Row(
+                                    children: [
+                                      Text.rich(
+                                        TextSpan(
+                                          style: HAppStyle.label2Bold.copyWith(
+                                              color: HAppColor.hOrangeColor,
+                                              decoration: TextDecoration.none),
+                                          text:
+                                              '${HAppUtils.vietNamCurrencyFormatting(widget.model.priceSale)} ',
+                                          children: [
+                                            TextSpan(
+                                              text: HAppUtils
+                                                  .vietNamCurrencyFormatting(
+                                                      widget.model.price),
+                                              style: HAppStyle.label4Regular
+                                                  .copyWith(
+                                                      color:
+                                                          HAppColor.hGreyColor,
+                                                      decoration: TextDecoration
+                                                          .lineThrough),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ))
+          ],
+        ),
+      ),
+      onTap: () async {},
     );
   }
 }

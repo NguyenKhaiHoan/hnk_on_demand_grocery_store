@@ -104,6 +104,9 @@ dependencies:
   flutter_chat_types: ^3.6.2
   uuid: ^4.3.3
   pretty_qr_code: ^3.3.0
+  file_picker: ^8.0.0+1
+  csv: ^6.0.0
+  timeago: ^3.6.1
 
 dev_dependencies:
   flutter_test:

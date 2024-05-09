@@ -19,7 +19,9 @@ class _DrawerScreenState extends State<DrawerScreen> {
   @override
   void initState() {
     super.initState();
-    _messagingService.init(context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await _messagingService.init(context);
+    });
   }
 
   @override

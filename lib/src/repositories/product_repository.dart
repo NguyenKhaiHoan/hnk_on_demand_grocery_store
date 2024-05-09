@@ -30,6 +30,54 @@ class ProductRepository extends GetxController {
     }
   }
 
+  Future<List<ProductModel>> getProductsWithStatus(String status) async {
+    try {
+      final user = AuthenticationRepository.instance.authUser!;
+      final snapshot = await _db
+          .collection('Products')
+          .where('Status', isEqualTo: status)
+          .where('StoreId', isEqualTo: user.uid)
+          .orderBy('UploadTime', descending: true)
+          // .limit(10)
+          .get();
+      final list = snapshot.docs
+          .map((document) => ProductModel.fromDocumentSnapshot(document))
+          .toList();
+      return list;
+    } on FirebaseException catch (e) {
+      throw HFirebaseException(code: e.code).message;
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<ProductModel> getProductInformation(String productId) async {
+    try {
+      final documentSnapshot =
+          await _db.collection('Products').doc(productId).get();
+      if (documentSnapshot.exists) {
+        return ProductModel.fromDocumentSnapshot(documentSnapshot);
+      } else {
+        return ProductModel.empty();
+      }
+    } on FirebaseException catch (e) {
+      throw HFirebaseException(code: e.code).message;
+    } catch (e) {
+      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau. ${e.toString()}';
+    }
+  }
+
+  Future<void> updateStatusProduct(
+      String productId, Map<String, dynamic> json) async {
+    try {
+      await _db.collection('Products').doc(productId).update(json);
+    } on FirebaseException catch (e) {
+      throw HFirebaseException(code: e.code).message;
+    } catch (e) {
+      throw 'Đã xảy ra sự cố. Xin vui lòng thử lại sau.';
+    }
+  }
+
   Future<void> uploadDummyData(List<ProductModel> products) async {
     try {
       final storage = Get.put(FirebaseStorageService());

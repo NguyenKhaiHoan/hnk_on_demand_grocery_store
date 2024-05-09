@@ -11,6 +11,7 @@ import 'package:on_demand_grocery_store/src/features/authentication/views/verify
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_name/change_name_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/change_phone_number/change_phone_screen.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/views/no_deliver/no_deliver_screen.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/views/profile/profile_detail.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/drawer/drawer_screen.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/order_detail/order_detail_screen.dart';
 
@@ -110,6 +111,14 @@ abstract class HAppPages {
     GetPage(
       name: HAppRoutes.orderDetail,
       page: () => OrderDetailScreen(),
+      transitionDuration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+      transition: Transition.rightToLeftWithFade,
+    ),
+
+    GetPage(
+      name: HAppRoutes.profileDetail,
+      page: () => const ProfileDetailScreen(),
       transitionDuration: const Duration(milliseconds: 500),
       curve: Curves.easeOut,
       transition: Transition.rightToLeftWithFade,

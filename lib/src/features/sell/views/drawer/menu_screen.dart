@@ -7,6 +7,7 @@ import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/chat/all_chat_screen.dart';
+import 'package:on_demand_grocery_store/src/features/sell/views/product/product_infomation_screen.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/voucher/add_voucher_screen.dart';
 import 'package:on_demand_grocery_store/src/features/sell/views/voucher/all_voucher_screen.dart';
 import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
@@ -72,9 +73,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // print(storeController.user.value.name.toString());
-                        // storeController.fetchStoreRecord();
-                        Get.to(const AllVoucherScreen());
+                        Get.toNamed(HAppRoutes.profileDetail);
                       },
                       child: const MenuItem(
                         icon: Icon(
@@ -101,6 +100,26 @@ class _MenuScreenState extends State<MenuScreen> {
                             color: HAppColor.hWhiteColor,
                             EvaIcons.messageSquareOutline),
                         title: 'Tin nhắn',
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.to(const AllVoucherScreen());
+                      },
+                      child: const MenuItem(
+                        icon: Icon(
+                            color: HAppColor.hWhiteColor, EvaIcons.giftOutline),
+                        title: 'Mã ưu đãi',
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Get.to(const ProductInformationScreen());
+                      },
+                      child: const MenuItem(
+                        icon: Icon(
+                            color: HAppColor.hWhiteColor, EvaIcons.gridOutline),
+                        title: 'Sản phẩm',
                       ),
                     ),
                     const MenuItem(

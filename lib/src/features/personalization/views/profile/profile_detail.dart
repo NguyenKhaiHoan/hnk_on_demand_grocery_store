@@ -5,6 +5,7 @@ import 'package:image_network/image_network.dart';
 import 'package:on_demand_grocery_store/src/common_widgets/custom_shimmer_widget.dart';
 import 'package:on_demand_grocery_store/src/constants/app_colors.dart';
 import 'package:on_demand_grocery_store/src/constants/app_sizes.dart';
+import 'package:on_demand_grocery_store/src/features/personalization/controllers/address_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_name_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/change_phone_controller.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/controllers/store_controller.dart';
@@ -22,6 +23,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   final userController = StoreController.instance;
   final changeNameController = ChangeNameController.instance;
   var changePhoneController = Get.put(ChangePhoneController());
+  var addressController = Get.put(AddressController());
 
   final double storeBackgroundHeight = 200;
   final double storeImageHeight = 140;
@@ -56,7 +58,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             alignment: Alignment.center,
             children: [
               Container(
-                  padding: EdgeInsets.only(bottom: storeImageHeight / 2),
+                  margin: EdgeInsets.only(bottom: storeImageHeight / 2),
                   height: storeBackgroundHeight,
                   width: HAppSize.deviceWidth,
                   color: HAppColor.hGreyColorShade300,
@@ -66,7 +68,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         () =>
                             userController.user.value.storeImageBackground != ''
                                 ? ImageNetwork(
-                                    image: userController.user.value.storeImage,
+                                    image: userController
+                                        .user.value.storeImageBackground,
                                     height: storeBackgroundHeight,
                                     width: HAppSize.deviceWidth,
                                     duration: 500,
@@ -76,7 +79,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                     fullScreen: false,
                                     fitAndroidIos: BoxFit.cover,
                                     fitWeb: BoxFitWeb.cover,
-                                    borderRadius: BorderRadius.circular(100),
                                     onLoading: CustomShimmerWidget.circular(
                                         width: storeImageHeight,
                                         height: storeImageHeight),
@@ -242,7 +244,19 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 SectionProfileWidget(
                   title: 'Mô tả',
                   showIcon: true,
-                  title2: userController.user.value.description,
+                  title2:
+                      '${userController.user.value.description.substring(0, userController.user.value.description.length > 100 ? 100 : userController.user.value.description.length)}...',
+                  isSubLoading: false,
+                ),
+                gapH6,
+                Divider(
+                  color: HAppColor.hGreyColorShade300,
+                ),
+                gapH6,
+                SectionProfileWidget(
+                  title: 'Địa chỉ',
+                  showIcon: true,
+                  title2: addressController.currentAddress.value.toString(),
                   isSubLoading: false,
                 ),
                 gapH6,
@@ -326,7 +340,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 ),
               ],
             ),
-          )
+          ),
+          gapH12,
         ]),
       ),
     );

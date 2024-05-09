@@ -11,12 +11,24 @@ import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:toastification/toastification.dart';
 
 class HAppUtils {
+  static String shortenProductName(String originalString, String productName) {
+    const int maxLength = 6;
+
+    if (productName.length > maxLength) {
+      return originalString.replaceAll(
+        productName,
+        '${productName.substring(0, maxLength)}...',
+      );
+    }
+    return originalString;
+  }
+
   static orderStatus(int status) {
     switch (status) {
       case 0:
         return 'Đơn đặt hàng thành công';
       case 1:
-        return 'Cửa hàng xác nhận';
+        return 'Cửa hàng tạp hóa xác nhận';
       case 2:
         return 'Người giao hàng xác nhận';
       case 3:

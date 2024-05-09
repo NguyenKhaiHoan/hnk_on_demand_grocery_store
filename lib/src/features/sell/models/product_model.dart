@@ -116,4 +116,12 @@ class ProductModel {
         uploadTime: DateTime.fromMillisecondsSinceEpoch(
             int.parse((json['UploadTime'] ?? 0).toString())));
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is ProductModel) {
+      return id == other.id;
+    }
+    return false;
+  }
 }

@@ -91,4 +91,12 @@ class ProductInCartModel {
     }
     return ProductInCartModel.empty();
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is ProductInCartModel) {
+      return productId == other.productId;
+    }
+    return false;
+  }
 }

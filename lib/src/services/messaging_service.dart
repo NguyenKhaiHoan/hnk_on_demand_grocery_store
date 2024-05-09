@@ -13,13 +13,19 @@ import 'package:on_demand_grocery_store/src/features/personalization/controllers
 import 'package:on_demand_grocery_store/src/features/personalization/models/store_model.dart';
 import 'package:on_demand_grocery_store/src/features/personalization/models/user_address_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/delivery_person_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/notification_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/order_model.dart';
+import 'package:on_demand_grocery_store/src/features/sell/models/product_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/store_note_model.dart';
 import 'package:on_demand_grocery_store/src/features/sell/models/user_model.dart';
+import 'package:on_demand_grocery_store/src/repositories/authentication_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/notification_repository.dart';
+import 'package:on_demand_grocery_store/src/repositories/product_repository.dart';
 import 'package:on_demand_grocery_store/src/repositories/store_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:on_demand_grocery_store/src/utils/theme/app_style.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
+import 'package:uuid/uuid.dart';
 
 class HNotificationService {
   static String? fcmToken;
@@ -34,6 +40,8 @@ class HNotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
 
   final storeRepository = Get.put(StoreRepository());
+  static final productRepository = Get.put(ProductRepository());
+  static final notificationRepository = Get.put(NotificationRepository());
 
   Future<void> init(BuildContext context) async {
     NotificationSettings settings = await _fcm.requestPermission(
@@ -142,40 +150,23 @@ class HNotificationService {
     }
   }
 
-  static sendNotificationToNearbyDeliveryPersons(
-      DeliveryPersonModel nearbyDeliveryPerson, OrderModel order) async {
+  static Future<void> sendNotificationToNearbyDeliveryPersons(
+      DeliveryPersonModel nearbyDeliveryPerson, String orderId) async {
     try {
       const postUrl = 'https://fcm.googleapis.com/fcm/send';
-      var data = {};
+      var data = {
+        "to": nearbyDeliveryPerson.cloudMessagingToken,
+        "notification": {
+          "title": 'Đơn giao hàng mới',
+          "body": 'Có đơn hàng mới được đặt',
+        },
+        "data": {
+          "orderId": orderId,
+          "storeId": StoreController.instance.user.value.id
+        }
+      };
 
-      if (order.orderType == 'uu_tien') {
-        data = {
-          'priority': 'high',
-          "to": nearbyDeliveryPerson.cloudMessagingToken,
-          "notification": {
-            "title": 'Đơn giao hàng mới',
-            "body": 'Có đơn hàng mới được đặt',
-          },
-          "data": {
-            "order": order.toJson(),
-            "storeId": StoreController.instance.user.value.id
-          }
-        };
-      } else {
-        data = {
-          "to": nearbyDeliveryPerson.cloudMessagingToken,
-          "notification": {
-            "title": 'Đơn giao hàng mới',
-            "body": 'Có đơn hàng mới được đặt',
-          },
-          "data": {
-            "order": order.toJson(),
-            "storeId": StoreController.instance.user.value.id
-          }
-        };
-      }
-
-      print(order.orderUserAddress.toString());
+      print(data.toString());
 
       final headers = {
         'content-type': 'application/json',
@@ -188,7 +179,7 @@ class HNotificationService {
               body: json.encode(data),
               encoding: Encoding.getByName('utf-8'),
               headers: headers)
-          .then((value) => print('${value.body}'))
+          .then((value) => print(value.body))
           .timeout(const Duration(seconds: 60), onTimeout: () {
         log('Đã hết thời gian kết nối');
         throw TimeoutException('Đã hết thời gian kết nối');
@@ -197,22 +188,26 @@ class HNotificationService {
         throw Exception(error);
       });
     } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
       throw Exception(e);
     }
   }
 
-  static sendNotificationToUserByOneReject(
+  static Future<void> sendNotificationToUserByOneReject(
       OrderModel order, StoreOrderModel store) async {
     try {
       print('Đã vào gửi tin');
       const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      String title = 'Từ chối đơn hàng';
+      String body = 'Đơn hàng của bạn bị từ chối bởi cửa hàng: ${store.name}';
+
       final data = {
         "to": order.orderUser.cloudMessagingToken,
         "notification": {
-          "title": 'Từ chối',
-          "body": 'Đơn hàng của bạn bị từ chối bởi cửa hàng: ${store.name}',
+          "title": title,
+          "body": body,
         },
-        "data": {"reject": 'Bị từ chối', 'order': order.toJson()}
+        "data": {"reject": 'Bị từ chối', 'order': order.oderId}
       };
 
       final headers = {
@@ -226,8 +221,18 @@ class HNotificationService {
               body: json.encode(data),
               encoding: Encoding.getByName('utf-8'),
               headers: headers)
-          .then((value) => print('${value.body}'))
-          .timeout(const Duration(seconds: 60), onTimeout: () {
+          .then((value) async {
+        print(value.body);
+        var uuid = const Uuid();
+        await notificationRepository.addNotification(
+            NotificationModel(
+                id: uuid.v1(),
+                title: title,
+                body: body,
+                time: DateTime.now(),
+                type: 'order'),
+            order.orderUserId);
+      }).timeout(const Duration(seconds: 60), onTimeout: () {
         log('Đã hết thời gian kết nối');
         throw TimeoutException('Đã hết thời gian kết nối');
       }).onError((error, stackTrace) {
@@ -235,21 +240,77 @@ class HNotificationService {
         throw Exception(error);
       });
     } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
       throw Exception(e);
     }
   }
 
-  static sendNotificationToUserByAllReject(OrderModel order) async {
+  // static Future<void> sendNotificationToUserByAcceptOrder(
+  //     OrderModel order, StoreOrderModel store) async {
+  //   try {
+  //     print('Đã vào gửi tin');
+  //     const postUrl = 'https://fcm.googleapis.com/fcm/send';
+  //     String title = 'Chấp nhận đơn hàng';
+  //     String body =
+  //         'Đơn hàng của bạn đã được chấp nhận bởi cửa hàng: ${store.name}';
+
+  //     final data = {
+  //       "to": order.orderUser.cloudMessagingToken,
+  //       "notification": {
+  //         "title": title,
+  //         "body": body,
+  //       },
+  //     };
+
+  //     final headers = {
+  //       'content-type': 'application/json',
+  //       'Authorization': 'key=${HAppKey.fcmKeyServer}'
+  //     };
+  //     print('Chờ vào gửi tin');
+
+  //     await http
+  //         .post(Uri.parse(postUrl),
+  //             body: json.encode(data),
+  //             encoding: Encoding.getByName('utf-8'),
+  //             headers: headers)
+  //         .then((value) async {
+  //       print(value.body);
+  //       var uuid = const Uuid();
+  //       await notificationRepository.addNotification(
+  //           NotificationModel(
+  //               id: uuid.v1(),
+  //               title: title,
+  //               body: body,
+  //               time: DateTime.now(),
+  //               type: 'order'),
+  //           order.orderUserId);
+  //     }).timeout(const Duration(seconds: 60), onTimeout: () {
+  //       log('Đã hết thời gian kết nối');
+  //       throw TimeoutException('Đã hết thời gian kết nối');
+  //     }).onError((error, stackTrace) {
+  //       HAppUtils.showSnackBarError('Lỗi', error.toString());
+  //       throw Exception(error);
+  //     });
+  //   } catch (e) {
+  //     HAppUtils.showSnackBarError('Lỗi', e.toString());
+  //     throw Exception(e);
+  //   }
+  // }
+
+  static Future<void> sendNotificationToUserByAllReject(
+      OrderModel order) async {
     try {
       const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      String title = 'Từ chối đơn hàng';
+      String body =
+          'Đơn hàng của bạn bị từ chối bởi các cửa hàng, xin hãy vui lòng đặt đơn mới tại các cửa hàng khác hoặc đặt lại sau.';
       final data = {
         "to": order.orderUser.cloudMessagingToken,
         "notification": {
-          "title": 'Từ chối',
-          "body":
-              'Đơn hàng của bạn bị từ chối bởi các cửa hàng, xin hãy vui lòng đặt đơn mới tại các cửa hàng khác hoặc đặt lại sau.',
+          "title": title,
+          "body": body,
         },
-        "data": {"reject": 'Bị từ chối tất cả', 'order': order.toJson()}
+        "data": {"reject": 'Bị từ chối tất cả', 'order': order.oderId}
       };
 
       print(order.orderUserAddress.toString());
@@ -265,8 +326,18 @@ class HNotificationService {
               body: json.encode(data),
               encoding: Encoding.getByName('utf-8'),
               headers: headers)
-          .then((value) => print('${value.body}'))
-          .timeout(const Duration(seconds: 60), onTimeout: () {
+          .then((value) async {
+        print(value.body);
+        var uuid = const Uuid();
+        await notificationRepository.addNotification(
+            NotificationModel(
+                id: uuid.v1(),
+                title: title,
+                body: body,
+                time: DateTime.now(),
+                type: 'order'),
+            order.orderUserId);
+      }).timeout(const Duration(seconds: 60), onTimeout: () {
         log('Đã hết thời gian kết nối');
         throw TimeoutException('Đã hết thời gian kết nối');
       }).onError((error, stackTrace) {
@@ -274,6 +345,173 @@ class HNotificationService {
         throw Exception(error);
       });
     } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
+      throw Exception(e);
+    }
+  }
+
+  static Future<void> sendNotificationToUserByAllAcceptOrder(
+      OrderModel order) async {
+    try {
+      const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      String title = 'Chấp nhận đơn hàng';
+      String body = 'Đơn hàng của bạn đã được cửa hàng chấp nhận.';
+      final data = {
+        "to": order.orderUser.cloudMessagingToken,
+        "notification": {
+          "title": title,
+          "body": body,
+        },
+      };
+
+      print(order.orderUserAddress.toString());
+
+      final headers = {
+        'content-type': 'application/json',
+        'Authorization': 'key=${HAppKey.fcmKeyServer}'
+      };
+      print('Chờ vào gửi tin');
+
+      await http
+          .post(Uri.parse(postUrl),
+              body: json.encode(data),
+              encoding: Encoding.getByName('utf-8'),
+              headers: headers)
+          .then((value) async {
+        print(value.body);
+        var uuid = const Uuid();
+        await notificationRepository.addNotification(
+            NotificationModel(
+                id: uuid.v1(),
+                title: title,
+                body: body,
+                time: DateTime.now(),
+                type: 'order'),
+            order.orderUserId);
+      }).timeout(const Duration(seconds: 60), onTimeout: () {
+        log('Đã hết thời gian kết nối');
+        throw TimeoutException('Đã hết thời gian kết nối');
+      }).onError((error, stackTrace) {
+        HAppUtils.showSnackBarError('Lỗi', error.toString());
+        throw Exception(error);
+      });
+    } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
+      throw Exception(e);
+    }
+  }
+
+  static Future<void> sendNotificationToUserByProductRegistration(
+      List<String> tokens, String productId, List<String> userId) async {
+    try {
+      print('Đã vào gửi tin');
+      ProductModel product =
+          await productRepository.getProductInformation(productId);
+      const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      for (int i = 0; i < tokens.length; i++) {
+        String title = HAppUtils.shortenProductName(
+            'Sản phẩm ${product.name} có hàng trở lại!', product.name);
+        String body = HAppUtils.shortenProductName(
+            'Bạn đã có thể đặt hàng ngay với sản phẩm ${product.name} đã được cập nhật trạng thái trở lại.',
+            product.name);
+        final data = {
+          "to": tokens[i],
+          "notification": {
+            "title": title,
+            "body": body,
+          },
+          'data': {'type': 'product'},
+        };
+
+        final headers = {
+          'content-type': 'application/json',
+          'Authorization': 'key=${HAppKey.fcmKeyServer}'
+        };
+        print('Chờ vào gửi tin');
+
+        await http
+            .post(Uri.parse(postUrl),
+                body: json.encode(data),
+                encoding: Encoding.getByName('utf-8'),
+                headers: headers)
+            .then((value) async {
+          print(value.body);
+          var uuid = const Uuid();
+          await notificationRepository.addNotification(
+              NotificationModel(
+                  id: uuid.v1(),
+                  title: title,
+                  body: body,
+                  time: DateTime.now(),
+                  type: 'product'),
+              userId[i]);
+        }).timeout(const Duration(seconds: 60), onTimeout: () {
+          log('Đã hết thời gian kết nối');
+          throw TimeoutException('Đã hết thời gian kết nối');
+        }).onError((error, stackTrace) {
+          HAppUtils.showSnackBarError('Lỗi', error.toString());
+          throw Exception(error);
+        });
+      }
+    } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
+      throw Exception(e);
+    }
+  }
+
+  static Future<void> sendNotificationToUserByStore(
+      List<String> tokens, List<String> userId) async {
+    try {
+      print('Đã vào gửi tin');
+      StoreModel store = await StoreRepository.instance.getStoreInformation();
+      const postUrl = 'https://fcm.googleapis.com/fcm/send';
+      for (int i = 0; i < tokens.length; i++) {
+        String title = HAppUtils.shortenProductName(
+            'Cửa hàng ${store.name} có ưu đãi mới', store.name);
+        String body = HAppUtils.shortenProductName(
+            'Cửa hàng ${store.name} đã cập nhật thêm mã ưu đãi mới. Hãy truy cập để kiểm tra ngay.',
+            store.name);
+        final data = {
+          "to": tokens[i],
+          "notification": {
+            "title": title,
+            "body": body,
+          },
+          'data': {'type': 'store'},
+        };
+
+        final headers = {
+          'content-type': 'application/json',
+          'Authorization': 'key=${HAppKey.fcmKeyServer}'
+        };
+        print('Chờ vào gửi tin');
+
+        await http
+            .post(Uri.parse(postUrl),
+                body: json.encode(data),
+                encoding: Encoding.getByName('utf-8'),
+                headers: headers)
+            .then((value) async {
+          print(value.body);
+          var uuid = const Uuid();
+          await notificationRepository.addNotification(
+              NotificationModel(
+                  id: uuid.v1(),
+                  title: title,
+                  body: body,
+                  time: DateTime.now(),
+                  type: 'store'),
+              userId[i]);
+        }).timeout(const Duration(seconds: 60), onTimeout: () {
+          log('Đã hết thời gian kết nối');
+          throw TimeoutException('Đã hết thời gian kết nối');
+        }).onError((error, stackTrace) {
+          HAppUtils.showSnackBarError('Lỗi', error.toString());
+          throw Exception(error);
+        });
+      }
+    } catch (e) {
+      HAppUtils.showSnackBarError('Lỗi', e.toString());
       throw Exception(e);
     }
   }

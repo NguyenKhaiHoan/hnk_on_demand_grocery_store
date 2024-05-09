@@ -16,12 +16,12 @@ class AddressController extends GetxController {
 
   var toggleRefresh = true.obs;
 
-
   List<DistrictModel> hanoiData = <DistrictModel>[].obs;
 
   @override
   void onInit() {
     readHaNoiDataJson();
+    fetchStoreAddresses();
     super.onInit();
   }
 

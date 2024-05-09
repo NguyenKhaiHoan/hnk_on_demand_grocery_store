@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -33,22 +34,43 @@ class OrderController extends GetxController {
 
   final orderRepository = Get.put(OrderRepository());
 
-  void sendNotificationToDeliveryPerson(OrderModel order) async {
+  Future<void> sendNotificationToDeliveryPerson(OrderModel order) async {
     try {
-      checkAllAccept(order);
+      await checkAllAccept(order);
       if (allAccept.value) {
+        await HNotificationService.sendNotificationToUserByAllAcceptOrder(
+            order);
+        bool shouldContinue = true;
+
         Future.forEach([1, 2, 3], (element) async {
-          await HLocationService.getNearbyDeliveryPersons(element * 3);
-          Future.delayed(Duration(seconds: element * 5)).then((value) async {
+          await HLocationService.getNearbyDeliveryPersons(element * 2);
+          Future.delayed(Duration(minutes: element * 5)).then((value) async {
+            if (!shouldContinue) return;
+            await FirebaseDatabase.instance
+                .ref()
+                .child('Orders/${order.oderId}')
+                .once()
+                .then((value) {
+              OrderModel orderData = OrderModel.fromJson(
+                  jsonDecode(jsonEncode(value.snapshot.value)));
+              print(orderData.toJson().toString());
+              if (orderData.deliveryPerson != null) {
+                shouldContinue = false;
+                return;
+              }
+            });
+
             final listDeliveryPersonId =
                 deliveryPersonController.allNearbydeliveryPersonsId;
+
             log('độ dài của mảng: ${listDeliveryPersonId.length}');
             for (var deliveryPersonId in listDeliveryPersonId) {
               final deliveryPersonData = await deliveryPersonRepository
                   .getDeliveryPersonInformation(deliveryPersonId);
               log('Chuẩn bị vào gửi tb: $deliveryPersonId');
-              HNotificationService.sendNotificationToNearbyDeliveryPersons(
-                  deliveryPersonData, order);
+              await HNotificationService
+                  .sendNotificationToNearbyDeliveryPersons(
+                      deliveryPersonData, order.oderId);
             }
           });
           if (deliveryPersonController.allNearbydeliveryPersonsId.isEmpty &&
@@ -66,7 +88,7 @@ class OrderController extends GetxController {
     }
   }
 
-  checkAllAccept(OrderModel order) async {
+  Future<void> checkAllAccept(OrderModel order) async {
     allAccept.value = true;
     if (order == OrderModel.empty()) {
       allAccept.value = false;
@@ -88,7 +110,7 @@ class OrderController extends GetxController {
     // isFirstTimeRequest.value = true;
   }
 
-  checkAllReject(OrderModel order) async {
+  void checkAllReject(OrderModel order) {
     allReject.value = true;
     if (order == OrderModel.empty()) {
       allReject.value = false;
@@ -102,27 +124,27 @@ class OrderController extends GetxController {
     }
   }
 
-  void sendNotificationToUser(OrderModel order) async {
+  Future<void> sendNotificationToUser(OrderModel order) async {
     try {
       checkAllReject(order);
       if (allReject.value) {
-        HNotificationService.sendNotificationToUserByAllReject(order);
+        await HNotificationService.sendNotificationToUserByAllReject(order);
         updateOrder(order: order, status: 'Từ chối', activeStep: 0);
-        removeOrder(order.oderId);
+        // await removeOrder(order.oderId);
       } else {
-        Future.forEach(order.storeOrders, (element) {
+        Future.forEach(order.storeOrders, (element) async {
           if (element.acceptByStore != -1) {
             int index = order.storeOrders
                 .indexWhere((store) => store.storeId == element.storeId);
-            HNotificationService.sendNotificationToUserByOneReject(
+            await HNotificationService.sendNotificationToUserByOneReject(
                 order, element);
             order.orderProducts
                 .removeWhere((product) => product.storeId == element.storeId);
-            FirebaseDatabase.instance
+            await FirebaseDatabase.instance
                 .ref()
                 .child('Orders/${order.oderId}/StoreOrders/$index')
                 .remove();
-            FirebaseDatabase.instance
+            await FirebaseDatabase.instance
                 .ref()
                 .child('Orders/${order.oderId}')
                 .update({'OrderProducts': order.orderProducts});
@@ -161,9 +183,9 @@ class OrderController extends GetxController {
     }
   }
 
-  removeOrder(String orderId) {
-    FirebaseDatabase.instance.ref().child('Orders/$orderId').remove();
-    FirebaseDatabase.instance.ref().child('Charts/$orderId').remove();
+  Future<void> removeOrder(String orderId) async {
+    await FirebaseDatabase.instance.ref().child('Orders/$orderId').remove();
+    await FirebaseDatabase.instance.ref().child('Charts/$orderId').remove();
     allReject.value = false;
     allAccept.value = false;
     // isFirstTimeRequest.value = true;
@@ -227,7 +249,7 @@ class OrderController extends GetxController {
         break;
       }
     }
-    var newTotalPrice = calculateCart(order);
+    var newTotalPrice = calculateCart(list, order);
     FirebaseDatabase.instance.ref().child('Orders/${order.oderId}').update({
       'OrderProducts': list.map((e) => e.toJson()).toList(),
       'ReplacedProducts':
@@ -244,12 +266,13 @@ class OrderController extends GetxController {
     });
   }
 
-  int calculateCart(OrderModel order) {
+  int calculateCart(List<ProductInCartModel> list, OrderModel order) {
     int totalPrice = 0;
-    for (var cartProduct in order.orderProducts) {
+    for (var cartProduct in list) {
       totalPrice += cartProduct.price! * cartProduct.quantity;
+      print(totalPrice);
     }
-    return totalPrice;
+    return totalPrice + order.deliveryCost + 5000 - order.discount;
   }
 
   int totalDifference(List<ProductInCartModel> products) {

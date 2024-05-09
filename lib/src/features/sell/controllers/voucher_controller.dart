@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +10,7 @@ import 'package:on_demand_grocery_store/src/features/sell/models/category_model.
 import 'package:on_demand_grocery_store/src/features/sell/models/voucher_model.dart';
 import 'package:on_demand_grocery_store/src/repositories/category_repository.dart';
 import 'package:on_demand_grocery_store/src/repositories/voucher_repository.dart';
+import 'package:on_demand_grocery_store/src/services/messaging_service.dart';
 import 'package:on_demand_grocery_store/src/utils/utils.dart';
 
 class VoucherController extends GetxController {
@@ -110,7 +114,30 @@ class VoucherController extends GetxController {
           storeId: StoreController.instance.user.value.id);
       print(voucher.toString());
 
-      final id = await voucherRepository.addAndFindIdForNewVoucher(voucher);
+      final id = await voucherRepository
+          .addAndFindIdForNewVoucher(voucher)
+          .then((value) async {
+        DatabaseReference ref = FirebaseDatabase.instance
+            .ref()
+            .child('FollowedStores/${StoreController.instance.user.value.id}');
+        DatabaseEvent event = await ref.once();
+        if (event.snapshot.value != null) {
+          Map<String, dynamic> data =
+              jsonDecode(jsonEncode(event.snapshot.value));
+
+          List<String> tokens = [];
+          List<String> userIds = [];
+          data.forEach((key, value) {
+            tokens.add(value.toString());
+            userIds.add(key.toString());
+          });
+          await HNotificationService.sendNotificationToUserByStore(
+              tokens, userIds);
+        }
+      }).onError((error, stackTrace) {
+        HAppUtils.showSnackBarError(
+            'Lỗi', 'Đã xảy ra lỗi: ${error.toString()}');
+      });
       voucher.id = id;
 
       toggleRefresh.toggle();

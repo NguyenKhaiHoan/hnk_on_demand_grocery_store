@@ -57,7 +57,7 @@ class FormChangePasswordWidget extends StatelessWidget {
                         borderSide: BorderSide(
                             color: HAppColor.hGreyColorShade300, width: 1),
                         borderRadius: BorderRadius.circular(10)),
-                    hintText: 'Nhập mật khẩu hiện tại của bạn',
+                    hintText: 'Nhập mật khẩu hiện tại',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -90,7 +90,7 @@ class FormChangePasswordWidget extends StatelessWidget {
                         borderSide: BorderSide(
                             color: HAppColor.hGreyColorShade300, width: 1),
                         borderRadius: BorderRadius.circular(10)),
-                    hintText: 'Nhập mật khẩu mới của bạn',
+                    hintText: 'Nhập mật khẩu mới',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -125,7 +125,7 @@ class FormChangePasswordWidget extends StatelessWidget {
                         borderSide: BorderSide(
                             color: HAppColor.hGreyColorShade300, width: 1),
                         borderRadius: BorderRadius.circular(10)),
-                    hintText: 'Nhập lại mật khẩu mới của bạn',
+                    hintText: 'Nhập lại mật khẩu mới',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

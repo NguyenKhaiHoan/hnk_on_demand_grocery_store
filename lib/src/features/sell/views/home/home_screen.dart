@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final productController = Get.put(ProductController());
   final orderController = Get.put(OrderController());
   RxBool online = false.obs;
+  var refresh = false.obs;
 
   @override
   void initState() {
@@ -66,233 +67,252 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           actions: [
-            Obx(() => online.value
-                ? StreamBuilder(
-                    stream: FirebaseDatabase.instance
-                        .ref()
-                        .child(
-                            'Stores/${StoreController.instance.user.value.id}')
-                        .onValue,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Container();
-                      }
-                      if (snapshot.hasError) {
-                        return Container();
-                      }
+            GestureDetector(
+              onTap: () {
+                setState(() {});
+                refresh.toggle();
+              },
+              child: Icon(EvaIcons.refreshOutline),
+            ),
+            gapW16,
+            // Obx(() => online.value
+            //     ? StreamBuilder(
+            //         stream: FirebaseDatabase.instance
+            //             .ref()
+            //             .child(
+            //                 'Stores/${StoreController.instance.user.value.id}')
+            //             .onValue,
+            //         builder: (context, snapshot) {
+            //           if (snapshot.connectionState == ConnectionState.waiting) {
+            //             return Container();
+            //           }
+            //           if (snapshot.hasError) {
+            //             return Container();
+            //           }
 
-                      if (!snapshot.hasData ||
-                          snapshot.data!.snapshot.value == null) {
-                        return Padding(
-                          padding: hAppDefaultPaddingR,
-                          child: Switch(
-                              trackOutlineColor:
-                                  MaterialStateProperty.resolveWith(
-                                (final Set<MaterialState> states) {
-                                  if (states.contains(MaterialState.selected)) {
-                                    return null;
-                                  }
-                                  return HAppColor.hGreyColorShade300;
-                                },
-                              ),
-                              activeColor: HAppColor.hBluePrimaryColor,
-                              activeTrackColor: HAppColor.hBlueSecondaryColor,
-                              inactiveThumbColor: HAppColor.hWhiteColor,
-                              inactiveTrackColor: HAppColor.hGreyColorShade300,
-                              value: online.value,
-                              onChanged: (changed) async {
-                                online.value = changed;
-                                HLocationService.checkStatus(online.value);
-                              }),
-                        );
-                      }
-                      return Padding(
-                        padding: hAppDefaultPaddingR,
-                        child: Obx(() {
-                          return Switch(
-                              trackOutlineColor:
-                                  MaterialStateProperty.resolveWith(
-                                (final Set<MaterialState> states) {
-                                  if (states.contains(MaterialState.selected)) {
-                                    return null;
-                                  }
-                                  return HAppColor.hGreyColorShade300;
-                                },
-                              ),
-                              activeColor: HAppColor.hBluePrimaryColor,
-                              activeTrackColor: HAppColor.hBlueSecondaryColor,
-                              inactiveThumbColor: HAppColor.hWhiteColor,
-                              inactiveTrackColor: HAppColor.hGreyColorShade300,
-                              value: online.value,
-                              onChanged: (changed) async {
-                                online.value = changed;
-                                HLocationService.checkStatus(online.value);
-                              });
-                        }),
-                      );
-                    },
-                  )
-                : Padding(
-                    padding: hAppDefaultPaddingR,
-                    child: Switch(
-                        trackOutlineColor: MaterialStateProperty.resolveWith(
-                          (final Set<MaterialState> states) {
-                            if (states.contains(MaterialState.selected)) {
-                              return null;
-                            }
-                            return HAppColor.hGreyColorShade300;
-                          },
-                        ),
-                        activeColor: HAppColor.hBluePrimaryColor,
-                        activeTrackColor: HAppColor.hBlueSecondaryColor,
-                        inactiveThumbColor: HAppColor.hWhiteColor,
-                        inactiveTrackColor: HAppColor.hGreyColorShade300,
-                        value: online.value,
-                        onChanged: (changed) async {
-                          online.value = changed;
-                          HLocationService.checkStatus(online.value);
-                        }),
-                  )),
-            // Padding(
-            //   padding: hAppDefaultPaddingR,
-            //   child: Obx(() {
-            //     return Switch(
-            //         trackOutlineColor: MaterialStateProperty.resolveWith(
-            //           (final Set<MaterialState> states) {
-            //             if (states.contains(MaterialState.selected)) {
-            //               return null;
-            //             }
-            //             return HAppColor.hGreyColorShade300;
-            //           },
-            //         ),
-            //         activeColor: HAppColor.hBluePrimaryColor,
-            //         activeTrackColor: HAppColor.hBlueSecondaryColor,
-            //         inactiveThumbColor: HAppColor.hWhiteColor,
-            //         inactiveTrackColor: HAppColor.hGreyColorShade300,
-            //         value: online.value,
-            //         onChanged: (changed) async {
-            //           online.value = changed;
-            //           HLocationService.checkStatus(online.value);
-            //         });
-            //   }),
-            // )
+            //           if (!snapshot.hasData ||
+            //               snapshot.data!.snapshot.value == null) {
+            //             return Padding(
+            //               padding: hAppDefaultPaddingR,
+            //               child: Switch(
+            //                   trackOutlineColor:
+            //                       MaterialStateProperty.resolveWith(
+            //                     (final Set<MaterialState> states) {
+            //                       if (states.contains(MaterialState.selected)) {
+            //                         return null;
+            //                       }
+            //                       return HAppColor.hGreyColorShade300;
+            //                     },
+            //                   ),
+            //                   activeColor: HAppColor.hBluePrimaryColor,
+            //                   activeTrackColor: HAppColor.hBlueSecondaryColor,
+            //                   inactiveThumbColor: HAppColor.hWhiteColor,
+            //                   inactiveTrackColor: HAppColor.hGreyColorShade300,
+            //                   value: online.value,
+            //                   onChanged: (changed) async {
+            //                     online.value = changed;
+            //                     HLocationService.checkStatus(online.value);
+            //                   }),
+            //             );
+            //           }
+            //           return Padding(
+            //             padding: hAppDefaultPaddingR,
+            //             child: Obx(() {
+            //               return Switch(
+            //                   trackOutlineColor:
+            //                       MaterialStateProperty.resolveWith(
+            //                     (final Set<MaterialState> states) {
+            //                       if (states.contains(MaterialState.selected)) {
+            //                         return null;
+            //                       }
+            //                       return HAppColor.hGreyColorShade300;
+            //                     },
+            //                   ),
+            //                   activeColor: HAppColor.hBluePrimaryColor,
+            //                   activeTrackColor: HAppColor.hBlueSecondaryColor,
+            //                   inactiveThumbColor: HAppColor.hWhiteColor,
+            //                   inactiveTrackColor: HAppColor.hGreyColorShade300,
+            //                   value: online.value,
+            //                   onChanged: (changed) async {
+            //                     online.value = changed;
+            //                     HLocationService.checkStatus(online.value);
+            //                   });
+            //             }),
+            //           );
+            //         },
+            //       )
+            //     : Padding(
+            //         padding: hAppDefaultPaddingR,
+            //         child: Switch(
+            //             trackOutlineColor: MaterialStateProperty.resolveWith(
+            //               (final Set<MaterialState> states) {
+            //                 if (states.contains(MaterialState.selected)) {
+            //                   return null;
+            //                 }
+            //                 return HAppColor.hGreyColorShade300;
+            //               },
+            //             ),
+            //             activeColor: HAppColor.hBluePrimaryColor,
+            //             activeTrackColor: HAppColor.hBlueSecondaryColor,
+            //             inactiveThumbColor: HAppColor.hWhiteColor,
+            //             inactiveTrackColor: HAppColor.hGreyColorShade300,
+            //             value: online.value,
+            //             onChanged: (changed) async {
+            //               online.value = changed;
+            //               HLocationService.checkStatus(online.value);
+            //             }),
+            //       )),
           ],
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: hAppDefaultPaddingLR,
-            child: FirebaseAnimatedList(
-              sort: (a, b) {
-                return ((b.value as Map)['OrderDate'] as int)
-                    .compareTo(((a.value as Map)['OrderDate'] as int));
-              },
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              query: FirebaseDatabase.instance.ref().child('Orders'),
-              itemBuilder: (context, snapshot, animation, index) {
-                final orderData = snapshot.value as Map;
-                if (orderData.isEmpty || orderData == null) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Không có đơn mới bây giờ'),
-                  );
-                } else if (orderData['StoreOrders'] == null) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Không có đơn mới bây giờ'),
-                  );
-                } else {
-                  final storeOrdersData =
-                      (orderData['StoreOrders'] as List<dynamic>).map((e) {
-                    return StoreOrderModel.fromJson(jsonDecode(jsonEncode(e)));
-                  }).toList();
-                  final storeId =
-                      AuthenticationRepository.instance.authUser!.uid;
-                  final index = storeOrdersData
-                      .indexWhere((store) => store.storeId == storeId);
-                  if (index >= 0) {
-                    final order = OrderModel.fromJson(
-                        jsonDecode(jsonEncode(snapshot.value))
-                            as Map<String, dynamic>);
+              padding: hAppDefaultPaddingLR,
+              child: Obx(
+                () => FirebaseAnimatedList(
+                  key: Key(refresh.value.toString()),
+                  sort: (a, b) {
+                    return ((b.value as Map)['OrderDate'] as int)
+                        .compareTo(((a.value as Map)['OrderDate'] as int));
+                  },
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  query: FirebaseDatabase.instance.ref().child('Orders'),
+                  itemBuilder: (context, snapshot, animation, index) {
+                    final orderData = snapshot.value as Map;
+                    if (orderData.isEmpty || orderData == null) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Text('Không có đơn mới bây giờ'),
+                      );
+                    } else if (orderData['StoreOrders'] == null) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Text('Không có đơn mới bây giờ'),
+                      );
+                    } else {
+                      final storeOrdersData =
+                          (orderData['StoreOrders'] as List<dynamic>).map((e) {
+                        return StoreOrderModel.fromJson(
+                            jsonDecode(jsonEncode(e)));
+                      }).toList();
+                      final storeId =
+                          AuthenticationRepository.instance.authUser!.uid;
+                      final index = storeOrdersData
+                          .indexWhere((store) => store.storeId == storeId);
+                      if (index >= 0) {
+                        final order = OrderModel.fromJson(
+                            jsonDecode(jsonEncode(snapshot.value))
+                                as Map<String, dynamic>);
 
-                    int numberOfCart = 0;
-                    final productOrders = order.orderProducts
-                        .where((element) => element.storeId == storeId)
-                        .toList();
-                    for (var product in productOrders) {
-                      numberOfCart += product.quantity;
-                    }
-                    return GestureDetector(
-                      onTap: () => Get.toNamed(HAppRoutes.orderDetail,
-                          arguments: {'orderId': order.oderId, 'index': index}),
-                      child: Container(
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.only(
-                              bottom: hAppDefaultPadding / 2),
-                          decoration: BoxDecoration(
-                              color: HAppColor.hWhiteColor,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  width: 1,
-                                  color: HAppColor.hGreyColorShade300)),
-                          child: Column(children: [
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(children: [
+                        int numberOfCart = 0;
+                        final productOrders = order.orderProducts
+                            .where((element) => element.storeId == storeId)
+                            .toList();
+                        for (var product in productOrders) {
+                          numberOfCart += product.quantity;
+                        }
+                        return GestureDetector(
+                          onTap: () => Get.toNamed(HAppRoutes.orderDetail,
+                              arguments: {
+                                'orderId': order.oderId,
+                                'index': index
+                              }),
+                          child: Container(
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.only(
+                                  bottom: hAppDefaultPadding / 2),
+                              decoration: BoxDecoration(
+                                  color: HAppColor.hWhiteColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      width: 1,
+                                      color: HAppColor.hGreyColorShade300)),
+                              child: Column(children: [
+                                Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(children: [
+                                        Text(
+                                          '#${(order.oderId).substring(0, 6)}...',
+                                          style: HAppStyle.label2Bold.copyWith(
+                                              fontWeight: FontWeight.bold),
+                                          maxLines: 1,
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              5, 5, 5, 5),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            color: order.orderType == 'uu_tien'
+                                                ? HAppColor.hRedColor
+                                                : order.orderType ==
+                                                        'tieu_chuan'
+                                                    ? HAppColor
+                                                        .hBluePrimaryColor
+                                                    : HAppColor.hOrangeColor,
+                                          ),
+                                          child: Text(
+                                            order.orderType == 'uu_tien'
+                                                ? 'Ưu tiên'
+                                                : order.orderType ==
+                                                        'tieu_chuan'
+                                                    ? 'Tiêu chuẩn'
+                                                    : 'Đặt lịch',
+                                            style: HAppStyle.paragraph3Regular
+                                                .copyWith(
+                                                    color:
+                                                        HAppColor.hWhiteColor),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            Text(
+                                              DateFormat('h:mm a')
+                                                  .format(order.orderDate!),
+                                            ),
+                                            Text(
+                                              DateFormat('EEEE, d-M-y', 'vi')
+                                                  .format(order.orderDate!),
+                                              style: HAppStyle.paragraph3Regular
+                                                  .copyWith(
+                                                      color: HAppColor
+                                                          .hGreyColorShade600),
+                                            ),
+                                          ],
+                                        ),
+                                      ]),
+                                    ]),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                        child: ProductListStackWidget(
+                                      maxItems: 6,
+                                      items: productOrders,
+                                    )),
                                     Text(
-                                      '#${(order.oderId).substring(0, 15)}...',
-                                      style: HAppStyle.label2Bold.copyWith(
-                                          fontWeight: FontWeight.bold),
-                                      maxLines: 1,
+                                      'Số lượng: $numberOfCart',
+                                      style: HAppStyle.paragraph2Bold.copyWith(
+                                          color: HAppColor.hBluePrimaryColor),
                                     ),
-                                    const Spacer(),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
-                                      children: [
-                                        Text(
-                                          DateFormat('h:mm a')
-                                              .format(order.orderDate!),
-                                        ),
-                                        Text(
-                                          DateFormat('EEEE, d-M-y', 'vi')
-                                              .format(order.orderDate!),
-                                          style: HAppStyle.paragraph3Regular
-                                              .copyWith(
-                                                  color: HAppColor
-                                                      .hGreyColorShade600),
-                                        ),
-                                      ],
-                                    ),
-                                  ]),
-                                ]),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                    child: ProductListStackWidget(
-                                  maxItems: 6,
-                                  items: productOrders,
-                                )),
-                                Text(
-                                  'Số lượng: $numberOfCart',
-                                  style: HAppStyle.paragraph2Bold.copyWith(
-                                      color: HAppColor.hBluePrimaryColor),
-                                ),
-                              ],
-                            )
-                          ])),
-                    );
-                  } else {
-                    return Container();
-                  }
-                }
-              },
-            ),
-          ),
+                                  ],
+                                )
+                              ])),
+                        );
+                      } else {
+                        return Container();
+                      }
+                    }
+                  },
+                ),
+              )),
         ));
   }
 
